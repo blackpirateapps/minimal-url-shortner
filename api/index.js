@@ -1,8 +1,13 @@
 // /api/index.js
 
 import db from './_db.js'; 
-// We no longer need handleRedirect here
-import { handleAddDomain, handleShortenUrl, handleGetLinks } from './_handlers.js';
+import { 
+  handleAddDomain, 
+  handleShortenUrl, 
+  handleGetLinks,
+  handleGetDomains,
+  handleDeleteDomain
+} from './_handlers.js';
 
 export default async function handler(req, res) {
   console.log(`[INFO][API] Handler invoked for method=${req.method} path=${req.url}`);
@@ -26,6 +31,14 @@ export default async function handler(req, res) {
     }
 
     // --- Routing Logic (API only) ---
+    if (path === "/api/domains" && method === "GET") {
+      return await handleGetDomains(req, res, db);
+    }
+    
+    if (path === "/api/domains" && method === "DELETE") {
+      return await handleDeleteDomain(req, res, db, bodyData);
+    }
+    
     if (path === "/api/links" && method === "GET") {
       return await handleGetLinks(req, res, db);
     }

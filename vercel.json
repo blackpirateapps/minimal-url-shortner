@@ -6,7 +6,7 @@
     },
     {
       "source": "/:slug((?!api/|favicon.ico).*)",
-      "destination": "/api/redirect.js"
+      "destination": "/api/redirect.js?slug=:slug"
     }
   ]
 }
