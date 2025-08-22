@@ -1,6 +1,6 @@
 // /api/_handlers.js
 import { customAlphabet } from "nanoid";
-import bcrypt from 'bcryptjs'; // Import the bcrypt library
+import bcrypt from 'bcryptjs';
 
 const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 7);
 
@@ -21,24 +21,36 @@ export async function handleVerifyPassword(req, res, db, bodyData) {
   }
 
   const link = result.rows[0];
-  
-  // Securely compare the provided password with the stored hash
   const isPasswordCorrect = bcrypt.compareSync(password, link.password);
 
   if (isPasswordCorrect) {
-    // Password is correct, return the destination URL
+    // --- START: Analytics Logging for Protected Links ---
+    // If password is correct, log the click before returning the URL.
+    try {
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const userAgent = req.headers['user-agent'];
+        const referrer = req.headers['referer'];
+        
+        await db.batch([
+          { sql: "INSERT INTO clicks (link_slug, ip_address, user_agent, referrer) VALUES (?, ?, ?, ?)", args: [slug, ip, userAgent, referrer] },
+          { sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?", args: [slug] }
+        ], 'write');
+        console.log(`[INFO][API] Logged click for protected slug: ${slug}`);
+    } catch (dbError) {
+        console.error(`[ERROR][API] Failed to log analytics for protected slug ${slug}:`, dbError);
+    }
+    // --- END: Analytics Logging ---
+
     return res.status(200).json({ destinationUrl: link.url });
   } else {
-    // Password is incorrect
     return res.status(401).json({ error: "Invalid password." });
   }
 }
 
-// --- UPDATED: Handler for creating a short URL ---
+// --- Other handlers (no changes needed) ---
 export async function handleShortenUrl(req, res, db, bodyData) {
   const { url: longUrl, slug: customSlug, hostname, password } = bodyData;
   if (!longUrl || !hostname) return res.status(400).json({ error: "Destination URL and a domain are required." });
-  
   let slug;
   if (customSlug) {
     const existing = await db.execute({ sql: "SELECT slug FROM links WHERE slug = ?", args: [customSlug] });
@@ -51,24 +63,18 @@ export async function handleShortenUrl(req, res, db, bodyData) {
       existing = await db.execute({ sql: "SELECT slug FROM links WHERE slug = ?", args: [slug] });
     } while (existing.rows.length > 0);
   }
-  
   let hashedPassword = null;
   if (password) {
-    // If a password is provided, hash it before storing
     const salt = bcrypt.genSaltSync(10);
     hashedPassword = bcrypt.hashSync(password, salt);
   }
-
   await db.execute({ 
     sql: "INSERT INTO links (slug, url, hostname, password) VALUES (?, ?, ?, ?)", 
     args: [slug, longUrl, hostname, hashedPassword] 
   });
-  
   const shortUrl = `https://${hostname}/${slug}`;
   return res.status(200).json({ shortUrl });
 }
-
-// --- Other handlers (no changes needed) ---
 export async function handleGetLinkDetails(req, res, db) {
   const { slug } = req.query;
   if (!slug) return res.status(400).json({ error: "Slug is required." });
