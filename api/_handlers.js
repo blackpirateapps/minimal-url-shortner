@@ -2,9 +2,8 @@
 import { customAlphabet } from "nanoid";
 const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 7);
 
-// --- NEW: Handler to get detailed click data for a single link ---
+// --- Handler to get detailed click data for a single link ---
 export async function handleGetLinkDetails(req, res, db) {
-  // The slug will be passed as a query parameter, e.g., /api/link-details?slug=xyz
   const { slug } = req.query;
   if (!slug) {
     return res.status(400).json({ error: "Slug is required." });
@@ -18,12 +17,12 @@ export async function handleGetLinkDetails(req, res, db) {
 
 // --- UPDATED: Handler for fetching all links ---
 export async function handleGetLinks(req, res, db) {
-  // Now also fetches the click_count
-  const linksResult = await db.execute("SELECT slug, url, created_at, click_count FROM links ORDER BY created_at DESC");
+  // Now also fetches the hostname and click_count
+  const linksResult = await db.execute("SELECT slug, url, created_at, click_count, hostname FROM links ORDER BY created_at DESC");
   return res.status(200).json(linksResult.rows);
 }
 
-// --- Domain Handlers (no changes needed) ---
+// --- Domain Handlers ---
 export async function handleGetDomains(req, res, db) {
   const domainsResult = await db.execute("SELECT hostname, added_at FROM domains ORDER BY added_at ASC");
   return res.status(200).json(domainsResult.rows);
@@ -45,10 +44,11 @@ export async function handleAddDomain(req, res, db, bodyData) {
   return res.status(201).json({ message: "Domain added successfully." });
 }
 
-// --- Shorten URL Handler (no changes needed) ---
+// --- UPDATED: Handler for creating a short URL ---
 export async function handleShortenUrl(req, res, db, bodyData) {
   const { url: longUrl, slug: customSlug, hostname } = bodyData;
   if (!longUrl || !hostname) return res.status(400).json({ error: "Destination URL and a domain are required." });
+  
   let slug;
   if (customSlug) {
     const existing = await db.execute({ sql: "SELECT slug FROM links WHERE slug = ?", args: [customSlug] });
@@ -61,7 +61,13 @@ export async function handleShortenUrl(req, res, db, bodyData) {
       existing = await db.execute({ sql: "SELECT slug FROM links WHERE slug = ?", args: [slug] });
     } while (existing.rows.length > 0);
   }
-  await db.execute({ sql: "INSERT INTO links (slug, url) VALUES (?, ?)", args: [slug, longUrl] });
+  
+  // Now saves the hostname along with the slug and URL
+  await db.execute({ 
+    sql: "INSERT INTO links (slug, url, hostname) VALUES (?, ?, ?)", 
+    args: [slug, longUrl, hostname] 
+  });
+  
   const shortUrl = `https://${hostname}/${slug}`;
   return res.status(200).json({ shortUrl });
 }
