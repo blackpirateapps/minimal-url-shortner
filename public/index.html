@@ -137,16 +137,27 @@
                     body: JSON.stringify({ url: longUrl })
                 });
 
-                const result = await response.json();
-
-                if (response.ok) {
-                    shortUrlLink.href = result.shortUrl;
-                    shortUrlLink.textContent = result.shortUrl;
-                    resultDiv.classList.remove('hidden');
-                    copyFeedback.textContent = '';
+                // --- START: Patched Logic ---
+                // Only try to parse JSON if the Content-Type header is correct.
+                const contentType = response.headers.get("content-type") || "";
+                if (contentType.includes("application/json")) {
+                    const result = await response.json();
+                    if (response.ok) {
+                        shortUrlLink.href = result.shortUrl;
+                        shortUrlLink.textContent = result.shortUrl;
+                        resultDiv.classList.remove('hidden');
+                        copyFeedback.textContent = '';
+                    } else {
+                        throw new Error(result.error || 'Something went wrong.');
+                    }
                 } else {
-                    throw new Error(result.error || 'Something went wrong.');
+                    // If we get here, it's likely a Vercel error page.
+                    const textResponse = await response.text(); // Get the HTML/text for debugging
+                    console.error("Server returned a non-JSON response:", textResponse);
+                    throw new Error("Server returned an unexpected response. Check the console for details.");
                 }
+                // --- END: Patched Logic ---
+
             } catch (error) {
                 errorMessage.textContent = `Error: ${error.message}`;
             }
@@ -155,8 +166,6 @@
         // --- Copy to Clipboard Logic ---
         copyButton.addEventListener('click', () => {
             const textToCopy = shortUrlLink.href;
-            
-            // A fallback for navigator.clipboard which may not work in all contexts
             const textArea = document.createElement('textarea');
             textArea.value = textToCopy;
             document.body.appendChild(textArea);
@@ -168,7 +177,6 @@
                 copyFeedback.textContent = 'Failed to copy.';
             }
             document.body.removeChild(textArea);
-            
             setTimeout(() => { copyFeedback.textContent = ''; }, 2000);
         });
     </script>
