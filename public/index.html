@@ -176,10 +176,12 @@
         function showLogin() {
             dashboardSection.classList.add('hidden');
             loginSection.classList.remove('hidden');
+            loginSection.classList.add('flex');
         }
 
         function showDashboard() {
             loginSection.classList.add('hidden');
+            loginSection.classList.remove('flex');
             dashboardSection.classList.remove('hidden');
             // Initialize dashboard data now that we know we're logged in
             fetchDomains();
@@ -406,10 +408,11 @@
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = Object.fromEntries(new FormData(editForm).entries());
+            // Only send password if it's not empty, otherwise it will be cleared
             if (payload.password === '') {
-                // If password field is empty, we want to remove it
+                // explicitly send empty string to clear it
             } else if (!payload.password) {
-                delete payload.password; // If field was not touched, don't send it
+                delete payload.password; // if field is empty and not touched, don't send it
             }
             try {
                 const response = await fetchApi('/api/links', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
