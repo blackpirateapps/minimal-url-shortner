@@ -1,0 +1,14 @@
+{
+  "name": "vercel-turso-shortener",
+  "version": "1.0.0",
+  "description": "A minimal URL shortener using Vercel Functions and TursoDB.",
+  "main": "api/shorten.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel start"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.6.1",
+    "nanoid": "^5.0.7"
+  }
+}
