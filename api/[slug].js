@@ -1,19 +1,26 @@
 // api/[slug].js
 import { db } from '../_lib/db.js';
-import dashboardHandler from './index.js'; // <-- UPDATED: Correctly imports the default export
+import dashboardHandler from './index.js';
 
 export default async function handler(request, response) {
     const slug = request.query.slug;
     const host = request.headers['x-forwarded-host'] || request.headers.host;
-    const appHostname = new URL(process.env.VERCEL_URL).hostname;
 
-    // If the request is for the root of the main app domain, show the dashboard.
-    if (host === appHostname && (!slug || slug === 'index')) {
+    // --- UPDATED LOGIC ---
+    // Use a more reliable environment variable for the main app's hostname.
+    // VERCEL_PROJECT_PRODUCTION_URL is the canonical URL for the production deployment.
+    // Fallback to VERCEL_URL for preview deployments.
+    const appHostname = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+
+    // If the hostname is not available (e.g., local dev), or if the request
+    // is for the root of the main app domain, show the dashboard.
+    if (!appHostname || (host === appHostname && (!slug || slug === 'index'))) {
         return dashboardHandler(request, response);
     }
     
     try {
-        // Check if the host is a registered custom domain or the main app domain
+        // Check if the host is a registered custom domain OR the main app domain.
+        // This allows short links to work on both.
         let isDomainValid = (host === appHostname);
         if (!isDomainValid) {
             const domainResult = await db.execute({
