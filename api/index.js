@@ -9,6 +9,7 @@ const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL;
 const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN;
 
 // --- Turso DB Client Initialization ---
+// This block will only execute if the environment variables are present.
 const db = createClient({
   url: TURSO_DATABASE_URL,
   authToken: TURSO_AUTH_TOKEN,
@@ -39,31 +40,27 @@ export default async function handler(req, res) {
         args: [hostname],
       });
 
+      // IMPORTANT: Return after sending the response
       return res.status(201).json({ message: "Domain added successfully." });
     }
 
     // --- API Route: Create a new short link ---
     if (path === "/api/shorten" && method === "POST") {
       const { url: longUrl } = body;
-      if (!longUrl || typeof longUrl !== "string") {
-        return res.status(400).json({ error: "Invalid URL provided." });
+      if (!longUrl || typeof longUrl !== "string" || !longUrl.startsWith('http')) {
+        return res.status(400).json({ error: "A valid URL starting with http or https is required." });
       }
 
       // Generate a unique slug
       let slug = nanoid();
-      let existing = await db.execute({
-        sql: "SELECT slug FROM links WHERE slug = ?",
-        args: [slug],
-      });
-
-      // Keep generating until we find a unique slug
-      while (existing.rows.length > 0) {
+      let existing;
+      do {
         slug = nanoid();
         existing = await db.execute({
           sql: "SELECT slug FROM links WHERE slug = ?",
           args: [slug],
         });
-      }
+      } while (existing.rows.length > 0);
 
       // Store the new link in the database
       await db.execute({
@@ -79,11 +76,12 @@ export default async function handler(req, res) {
         domainsResult.rows.length > 0 ? domainsResult.rows[0].hostname : req.headers.host;
 
       const shortUrl = `https://${primaryDomain}/${slug}`;
-
+      
+      // IMPORTANT: Return after sending the response
       return res.status(200).json({ shortUrl });
     }
 
-    // --- Redirect Logic: Handle short link visits ---
+    // --- Redirect Logic: Handle all other GET requests as potential slugs ---
     const slug = path.substring(1); // Remove leading '/'
     if (slug) {
       const result = await db.execute({
@@ -98,10 +96,8 @@ export default async function handler(req, res) {
       }
     }
 
-    // --- Fallback ---
-    // If no route is matched, you can redirect to your main page or show a 404.
-    // For this example, we'll just send a simple message.
-    return res.status(404).send("URL not found or invalid API route.");
+    // --- Fallback for any other requests ---
+    return res.status(404).json({ error: "Not Found" });
 
   } catch (error) {
     console.error("An error occurred:", error);
