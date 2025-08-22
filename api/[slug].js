@@ -1,5 +1,5 @@
 // api/[slug].js
-import { db } from './_lib/db.js';
+import { db } from '../_lib/db.js'; // <-- UPDATED PATH
 import { handler as dashboardHandler } from './index.js';
 
 export default async function handler(request, response) {

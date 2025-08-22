@@ -1,5 +1,5 @@
 // api/domains.js
-import { db } from './_lib/db.js';
+import { db } from '../_lib/db.js'; // <-- UPDATED PATH
 
 const ADMIN_PASSWORD = process.env.DASHBOARD_PASSWORD;
 

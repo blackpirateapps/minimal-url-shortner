@@ -1,5 +1,5 @@
 // api/shorten.js
-import { db } from './_lib/db.js';
+import { db } from '../_lib/db.js'; // <-- UPDATED PATH
 import { nanoid } from 'nanoid';
 
 const ADMIN_PASSWORD = process.env.DASHBOARD_PASSWORD;
