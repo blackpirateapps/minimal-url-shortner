@@ -7,10 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        // Auth check - must run before anything else
-        if (document.cookie.indexOf('auth_token=') === -1 && window.location.pathname !== '/login.html') {
-            window.location.href = '/login.html';
-        }
         // Dark Mode Initializer
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -27,8 +23,32 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 min-h-screen p-4 md:p-8 transition-colors duration-300">
 
-    <!-- Main Content -->
-    <main class="w-full max-w-6xl mx-auto space-y-8">
+    <!-- Login Section (Initially visible if not authenticated) -->
+    <div id="login-section" class="hidden min-h-screen flex items-center justify-center">
+        <main class="w-full max-w-md mx-auto">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8 space-y-6">
+                <div class="text-center">
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard Login</h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Enter the password to access your dashboard.</p>
+                </div>
+                <form id="login-form">
+                    <div>
+                        <label for="password-input" class="sr-only">Password</label>
+                        <input type="password" id="password-input" name="password" required placeholder="Enter password" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                    </div>
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Remember me for 30 days</label>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Login</button>
+                </form>
+                <div id="login-error-message" class="text-sm text-red-500 text-center"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Main Dashboard Section (Initially hidden) -->
+    <main id="dashboard-section" class="w-full max-w-6xl mx-auto space-y-8 hidden">
         <!-- Header -->
         <header class="flex justify-between items-center">
             <div class="text-center flex-grow">
@@ -140,6 +160,56 @@
     </div>
 
     <script>
+        // --- Global Selectors ---
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+
+        // --- Auth Check & Page Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.cookie.indexOf('auth_token=') > -1) {
+                showDashboard();
+            } else {
+                showLogin();
+            }
+        });
+
+        function showLogin() {
+            dashboardSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+        }
+
+        function showDashboard() {
+            loginSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            // Initialize dashboard data now that we know we're logged in
+            fetchDomains();
+            fetchLinks();
+        }
+
+        // --- Login Form Logic ---
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password-input').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+            const errorMessage = document.getElementById('login-error-message');
+            errorMessage.textContent = '';
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password, rememberMe })
+                });
+                if (response.ok) {
+                    showDashboard(); // On success, show the dashboard
+                } else {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Login failed.');
+                }
+            } catch (error) {
+                errorMessage.textContent = error.message;
+            }
+        });
+
         // --- Dark Mode & UI Toggles ---
         const themeToggleBtn = document.getElementById('theme-toggle');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
@@ -166,7 +236,7 @@
             const response = await fetch(url, options);
             if (response.status === 401) {
                 document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                window.location.href = '/login.html';
+                showLogin(); // Show login screen instead of redirecting
                 throw new Error('Session expired.');
             }
             return response;
@@ -336,11 +406,10 @@
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = Object.fromEntries(new FormData(editForm).entries());
-            // Only send password if it's not empty, otherwise it will be cleared
             if (payload.password === '') {
-                // explicitly send empty string to clear it
+                // If password field is empty, we want to remove it
             } else if (!payload.password) {
-                delete payload.password; // if field is empty and not touched, don't send it
+                delete payload.password; // If field was not touched, don't send it
             }
             try {
                 const response = await fetchApi('/api/links', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -352,11 +421,6 @@
                 editModal.classList.remove('flex');
                 await fetchLinks();
             } catch (error) { alert(`Error: ${error.message}`); }
-        });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchDomains();
-            fetchLinks();
         });
     </script>
 </body>
