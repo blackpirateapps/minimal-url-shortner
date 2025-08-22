@@ -46,6 +46,10 @@ export default async function handler(req, res) {
     }
 
     // --- AUTHENTICATION CHECK FOR ALL OTHER API ROUTES ---
+    if (!DASHBOARD_PASSWORD) {
+        console.error("[FATAL][API] DASHBOARD_PASSWORD is not set for auth check.");
+        return res.status(500).json({ error: "Server configuration error." });
+    }
     try {
       const cookies = parse(req.headers.cookie || '');
       const token = cookies.auth_token;

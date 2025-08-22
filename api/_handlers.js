@@ -28,8 +28,9 @@ export async function handleUpdateLink(req, res, db, bodyData) {
     }
   }
   
-  // If a new password was provided (even an empty one to remove it), hash it.
-  if (password || password === '') {
+  // Check if the password field was submitted.
+  if (Object.prototype.hasOwnProperty.call(bodyData, 'password')) {
+    // If password is an empty string, set it to null. Otherwise, hash it.
     const hashedPassword = password ? bcrypt.hashSync(password, bcrypt.genSaltSync(10)) : null;
     await db.execute({
       sql: "UPDATE links SET url = ?, slug = ?, password = ? WHERE slug = ?",

@@ -11,7 +11,7 @@
         if (document.cookie.indexOf('auth_token=') === -1 && window.location.pathname !== '/login.html') {
             window.location.href = '/login.html';
         }
-        // Dark Mode Initializer - FIXED
+        // Dark Mode Initializer
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -128,8 +128,8 @@
                     <input type="text" id="edit-slug" name="newSlug" required class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
                 </div>
                 <div>
-                    <label for="edit-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password (optional)</label>
-                    <input type="password" id="edit-password" name="password" placeholder="Leave blank to remove password" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                    <label for="edit-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
+                    <input type="password" id="edit-password" name="password" placeholder="Leave blank to keep current password" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
                 </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" id="cancel-edit-btn" class="bg-gray-200 dark:bg-slate-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg">Cancel</button>
@@ -165,7 +165,6 @@
         async function fetchApi(url, options) {
             const response = await fetch(url, options);
             if (response.status === 401) {
-                // Clear the cookie just in case it's invalid
                 document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                 window.location.href = '/login.html';
                 throw new Error('Session expired.');
@@ -337,7 +336,12 @@
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = Object.fromEntries(new FormData(editForm).entries());
-            if (!payload.password) delete payload.password;
+            // Only send password if it's not empty, otherwise it will be cleared
+            if (payload.password === '') {
+                // explicitly send empty string to clear it
+            } else if (!payload.password) {
+                delete payload.password; // if field is empty and not touched, don't send it
+            }
             try {
                 const response = await fetchApi('/api/links', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) {
