@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapidLink URL Shortener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-2xl mx-auto space-y-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800">RapidLink</h1>
+            <p class="text-gray-600 mt-2">A simple, fast, and custom URL shortener.</p>
+        </div>
+
+        <!-- Domain Setup Card -->
+        <div id="domain-card" class="card rounded-2xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">1. Setup Your Domain</h2>
+            <p class="text-gray-600 mb-6">Add your custom domain to start creating short links. You only need to do this once.</p>
+            
+            <form id="domain-form" class="space-y-4">
+                <div>
+                    <label for="hostname" class="block text-sm font-medium text-gray-700 mb-1">Your Custom Domain</label>
+                    <input type="text" id="hostname" name="hostname" placeholder="e.g., link.mywebsite.com" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
+                    Add Domain
+                </button>
+            </form>
+            <div id="domain-message" class="mt-4 text-sm"></div>
+
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">DNS Configuration</h3>
+                <p class="text-gray-600 mb-4">
+                    To point your domain to this service, create an <code class="bg-gray-200 text-gray-800 px-1 py-0.5 rounded">A</code> record in your DNS provider's settings and point it to the following Vercel IP address:
+                </p>
+                <div class="bg-gray-100 p-3 rounded-lg text-center">
+                    <code class="font-mono text-gray-800 text-lg">76.76.21.21</code>
+                </div>
+                 <p class="text-xs text-gray-500 mt-3">DNS changes can take some time to propagate. This is a standard Vercel IP for Hobby/Pro plans.</p>
+            </div>
+        </div>
+
+        <!-- URL Shortener Card -->
+        <div id="shortener-card" class="card rounded-2xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">2. Shorten a URL</h2>
+            <form id="shorten-form" class="space-y-4">
+                <div>
+                    <label for="long-url" class="block text-sm font-medium text-gray-700 mb-1">Destination URL</label>
+                    <input type="url" id="long-url" name="url" placeholder="https://your-very-long-url-to-shorten.com" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300">
+                    Generate Short URL
+                </button>
+            </form>
+
+            <div id="result" class="mt-6 hidden">
+                <h3 class="text-lg font-semibold text-gray-700">Your Short Link:</h3>
+                <div class="mt-2 bg-gray-100 p-4 rounded-lg flex items-center justify-between">
+                    <a id="short-url-link" href="#" target="_blank" class="font-mono text-blue-600 break-all"></a>
+                    <button id="copy-button" class="ml-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-300">Copy</button>
+                </div>
+                <div id="copy-feedback" class="text-sm text-green-600 mt-2"></div>
+            </div>
+             <div id="error-message" class="mt-4 text-sm text-red-600"></div>
+        </div>
+    </main>
+
+    <script>
+        // --- Domain Form Logic ---
+        const domainForm = document.getElementById('domain-form');
+        const domainMessage = document.getElementById('domain-message');
+
+        domainForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(domainForm);
+            const hostname = formData.get('hostname');
+            domainMessage.textContent = 'Adding domain...';
+            domainMessage.className = 'mt-4 text-sm text-gray-600';
+
+            try {
+                const response = await fetch('/api/add-domain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hostname })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    domainMessage.textContent = `Success! Domain "${hostname}" has been added.`;
+                    domainMessage.className = 'mt-4 text-sm text-green-600';
+                    domainForm.reset();
+                } else {
+                    throw new Error(result.error || 'Failed to add domain.');
+                }
+            } catch (error) {
+                domainMessage.textContent = `Error: ${error.message}`;
+                domainMessage.className = 'mt-4 text-sm text-red-600';
+            }
+        });
+
+        // --- Shorten Form Logic ---
+        const shortenForm = document.getElementById('shorten-form');
+        const resultDiv = document.getElementById('result');
+        const shortUrlLink = document.getElementById('short-url-link');
+        const copyButton = document.getElementById('copy-button');
+        const copyFeedback = document.getElementById('copy-feedback');
+        const errorMessage = document.getElementById('error-message');
+
+        shortenForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(shortenForm);
+            const longUrl = formData.get('url');
+            
+            resultDiv.classList.add('hidden');
+            errorMessage.textContent = '';
+
+            try {
+                const response = await fetch('/api/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: longUrl })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    shortUrlLink.href = result.shortUrl;
+                    shortUrlLink.textContent = result.shortUrl;
+                    resultDiv.classList.remove('hidden');
+                    copyFeedback.textContent = '';
+                } else {
+                    throw new Error(result.error || 'Something went wrong.');
+                }
+            } catch (error) {
+                errorMessage.textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // --- Copy to Clipboard Logic ---
+        copyButton.addEventListener('click', () => {
+            const textToCopy = shortUrlLink.href;
+            
+            // A fallback for navigator.clipboard which may not work in all contexts
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                copyFeedback.textContent = 'Copied to clipboard!';
+            } catch (err) {
+                copyFeedback.textContent = 'Failed to copy.';
+            }
+            document.body.removeChild(textArea);
+            
+            setTimeout(() => { copyFeedback.textContent = ''; }, 2000);
+        });
+    </script>
+</body>
+</html>
