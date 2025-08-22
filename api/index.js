@@ -10,7 +10,7 @@ import {
   handleDeleteLink, handleUpdateLink
 } from './_handlers.js';
 
-// It's still good practice to define this at the top level
+// Load the password from environment variables at the top level
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
 
 export default async function handler(req, res) {
@@ -20,6 +20,7 @@ export default async function handler(req, res) {
   try {
     let bodyData = {};
     if (req.body) {
+      // Ensure body is parsed correctly
       bodyData = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
     }
 
@@ -34,7 +35,7 @@ export default async function handler(req, res) {
         const token = jwt.sign({ user: 'admin' }, DASHBOARD_PASSWORD, { expiresIn: rememberMe ? '30d' : '24h' });
         const cookie = serialize('auth_token', token, {
           httpOnly: true,
-          secure: process.env.NODE_ENV !== 'development',
+          secure: req.headers['x-forwarded-proto'] === 'https',
           sameSite: 'strict',
           maxAge: rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60,
           path: '/',
