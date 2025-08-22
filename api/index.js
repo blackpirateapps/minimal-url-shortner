@@ -1,13 +1,11 @@
 // /api/index.js
 
-// Import the database connection first. If this fails, the whole function will fail.
 import db from './_db.js'; 
-import { handleAddDomain, handleShortenUrl, handleRedirect } from './_handlers.js';
+import { handleAddDomain, handleShortenUrl, handleRedirect, handleGetLinks } from './_handlers.js';
 
 export default async function handler(req, res) {
   console.log(`[INFO] Handler invoked for method=${req.method} path=${req.url}`);
 
-  // If the database connection failed during initialization, db will be null.
   if (!db) {
     console.error("[FATAL] Main handler cannot proceed because DB client is not available.");
     return res.status(500).json({ error: "Server configuration error. Check logs." });
@@ -27,6 +25,10 @@ export default async function handler(req, res) {
     }
 
     // --- Routing Logic ---
+    if (path === "/api/links" && method === "GET") {
+      return await handleGetLinks(req, res, db);
+    }
+    
     if (path === "/api/add-domain" && method === "POST") {
       return await handleAddDomain(req, res, db, bodyData);
     }
@@ -39,7 +41,7 @@ export default async function handler(req, res) {
     if (method === "GET" && slug && slug !== 'api' && !slug.includes('/')) {
         const redirectResult = await handleRedirect(req, res, db, slug);
         if (redirectResult) {
-            return redirectResult; // This will be the res.redirect() object
+            return redirectResult;
         }
     }
 

@@ -23,62 +23,80 @@
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
 
-    <main class="w-full max-w-2xl mx-auto space-y-8">
+    <main class="w-full max-w-4xl mx-auto space-y-8">
         <div class="text-center">
             <h1 class="text-4xl md:text-5xl font-bold text-gray-800">RapidLink</h1>
             <p class="text-gray-600 mt-2">A simple, fast, and custom URL shortener.</p>
         </div>
 
-        <!-- Domain Setup Card -->
-        <div id="domain-card" class="card rounded-2xl shadow-lg p-6 md:p-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4">1. Setup Your Domain</h2>
-            <p class="text-gray-600 mb-6">Add your custom domain to start creating short links. You only need to do this once.</p>
-            
-            <form id="domain-form" class="space-y-4">
-                <div>
-                    <label for="hostname" class="block text-sm font-medium text-gray-700 mb-1">Your Custom Domain</label>
-                    <input type="text" id="hostname" name="hostname" placeholder="e.g., link.mywebsite.com" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
-                    Add Domain
-                </button>
-            </form>
-            <div id="domain-message" class="mt-4 text-sm"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Domain Setup Card -->
+            <div id="domain-card" class="card rounded-2xl shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">1. Setup Your Domain</h2>
+                <p class="text-gray-600 mb-6">Add your custom domain to start creating short links.</p>
+                
+                <form id="domain-form" class="space-y-4">
+                    <div>
+                        <label for="hostname" class="block text-sm font-medium text-gray-700 mb-1">Custom Domain</label>
+                        <input type="text" id="hostname" name="hostname" placeholder="e.g., link.mywebsite.com" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Add Domain</button>
+                </form>
+                <div id="domain-message" class="mt-4 text-sm"></div>
 
-            <div class="mt-6 pt-6 border-t border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-700 mb-3">DNS Configuration</h3>
-                <p class="text-gray-600 mb-4">
-                    To point your domain to this service, create an <code class="bg-gray-200 text-gray-800 px-1 py-0.5 rounded">A</code> record in your DNS provider's settings and point it to the following Vercel IP address:
-                </p>
-                <div class="bg-gray-100 p-3 rounded-lg text-center">
-                    <code class="font-mono text-gray-800 text-lg">76.76.21.21</code>
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">DNS Configuration</h3>
+                    <p class="text-gray-600 mb-4">Create an <code class="bg-gray-200 px-1 py-0.5 rounded">A</code> record pointing to:</p>
+                    <div class="bg-gray-100 p-3 rounded-lg text-center"><code class="font-mono text-gray-800">76.76.21.21</code></div>
                 </div>
-                 <p class="text-xs text-gray-500 mt-3">DNS changes can take some time to propagate. This is a standard Vercel IP for Hobby/Pro plans.</p>
+            </div>
+
+            <!-- URL Shortener Card -->
+            <div id="shortener-card" class="card rounded-2xl shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">2. Shorten a URL</h2>
+                <form id="shorten-form" class="space-y-4">
+                    <div>
+                        <label for="long-url" class="block text-sm font-medium text-gray-700 mb-1">Destination URL</label>
+                        <input type="url" id="long-url" name="url" placeholder="https://your-very-long-url-to-shorten.com" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <!-- NEW: Custom Slug Input -->
+                    <div>
+                        <label for="custom-slug" class="block text-sm font-medium text-gray-700 mb-1">Custom Slug (Optional)</label>
+                        <input type="text" id="custom-slug" name="slug" placeholder="e.g., my-awesome-link" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition">Generate Short URL</button>
+                </form>
+
+                <div id="result" class="mt-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-700">Your Short Link:</h3>
+                    <div class="mt-2 bg-gray-100 p-4 rounded-lg flex items-center justify-between">
+                        <a id="short-url-link" href="#" target="_blank" class="font-mono text-blue-600 break-all"></a>
+                        <button id="copy-button" class="ml-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-300">Copy</button>
+                    </div>
+                    <div id="copy-feedback" class="text-sm text-green-600 mt-2"></div>
+                </div>
+                 <div id="error-message" class="mt-4 text-sm text-red-600"></div>
             </div>
         </div>
-
-        <!-- URL Shortener Card -->
-        <div id="shortener-card" class="card rounded-2xl shadow-lg p-6 md:p-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4">2. Shorten a URL</h2>
-            <form id="shorten-form" class="space-y-4">
-                <div>
-                    <label for="long-url" class="block text-sm font-medium text-gray-700 mb-1">Destination URL</label>
-                    <input type="url" id="long-url" name="url" placeholder="https://your-very-long-url-to-shorten.com" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300">
-                    Generate Short URL
-                </button>
-            </form>
-
-            <div id="result" class="mt-6 hidden">
-                <h3 class="text-lg font-semibold text-gray-700">Your Short Link:</h3>
-                <div class="mt-2 bg-gray-100 p-4 rounded-lg flex items-center justify-between">
-                    <a id="short-url-link" href="#" target="_blank" class="font-mono text-blue-600 break-all"></a>
-                    <button id="copy-button" class="ml-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-300">Copy</button>
-                </div>
-                <div id="copy-feedback" class="text-sm text-green-600 mt-2"></div>
+        
+        <!-- NEW: Active Links Section -->
+        <div id="links-section" class="card rounded-2xl shadow-lg p-6 md:p-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Active Links</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Short Link Slug</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination URL</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody id="links-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Links will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
             </div>
-             <div id="error-message" class="mt-4 text-sm text-red-600"></div>
+            <div id="links-loading" class="text-center py-4 text-gray-500">Loading links...</div>
         </div>
     </main>
 
@@ -86,14 +104,10 @@
         // --- Domain Form Logic ---
         const domainForm = document.getElementById('domain-form');
         const domainMessage = document.getElementById('domain-message');
-
         domainForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(domainForm);
-            const hostname = formData.get('hostname');
+            const hostname = new FormData(domainForm).get('hostname');
             domainMessage.textContent = 'Adding domain...';
-            domainMessage.className = 'mt-4 text-sm text-gray-600';
-
             try {
                 const response = await fetch('/api/add-domain', {
                     method: 'POST',
@@ -101,69 +115,56 @@
                     body: JSON.stringify({ hostname })
                 });
                 const result = await response.json();
-                if (response.ok) {
-                    domainMessage.textContent = `Success! Domain "${hostname}" has been added.`;
-                    domainMessage.className = 'mt-4 text-sm text-green-600';
-                    domainForm.reset();
-                } else {
-                    throw new Error(result.error || 'Failed to add domain.');
-                }
+                if (!response.ok) throw new Error(result.error);
+                domainMessage.textContent = `Success! Domain "${hostname}" added.`;
+                domainMessage.className = 'mt-4 text-sm text-green-600';
             } catch (error) {
                 domainMessage.textContent = `Error: ${error.message}`;
                 domainMessage.className = 'mt-4 text-sm text-red-600';
             }
         });
 
-        // --- Shorten Form Logic ---
+        // --- Shorten Form Logic (UPDATED) ---
         const shortenForm = document.getElementById('shorten-form');
         const resultDiv = document.getElementById('result');
         const shortUrlLink = document.getElementById('short-url-link');
-        const copyButton = document.getElementById('copy-button');
-        const copyFeedback = document.getElementById('copy-feedback');
         const errorMessage = document.getElementById('error-message');
-
         shortenForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(shortenForm);
             const longUrl = formData.get('url');
+            const customSlug = formData.get('slug');
             
             resultDiv.classList.add('hidden');
             errorMessage.textContent = '';
+
+            const payload = { url: longUrl };
+            if (customSlug) {
+                payload.slug = customSlug;
+            }
 
             try {
                 const response = await fetch('/api/shorten', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: longUrl })
+                    body: JSON.stringify(payload)
                 });
-
-                // --- START: Patched Logic ---
-                // Only try to parse JSON if the Content-Type header is correct.
-                const contentType = response.headers.get("content-type") || "";
-                if (contentType.includes("application/json")) {
-                    const result = await response.json();
-                    if (response.ok) {
-                        shortUrlLink.href = result.shortUrl;
-                        shortUrlLink.textContent = result.shortUrl;
-                        resultDiv.classList.remove('hidden');
-                        copyFeedback.textContent = '';
-                    } else {
-                        throw new Error(result.error || 'Something went wrong.');
-                    }
-                } else {
-                    // If we get here, it's likely a Vercel error page.
-                    const textResponse = await response.text(); // Get the HTML/text for debugging
-                    console.error("Server returned a non-JSON response:", textResponse);
-                    throw new Error("Server returned an unexpected response. Check the console for details.");
-                }
-                // --- END: Patched Logic ---
-
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+                
+                shortUrlLink.href = result.shortUrl;
+                shortUrlLink.textContent = result.shortUrl;
+                resultDiv.classList.remove('hidden');
+                shortenForm.reset();
+                await fetchLinks(); // Refresh the links list
             } catch (error) {
                 errorMessage.textContent = `Error: ${error.message}`;
             }
         });
 
         // --- Copy to Clipboard Logic ---
+        const copyButton = document.getElementById('copy-button');
+        const copyFeedback = document.getElementById('copy-feedback');
         copyButton.addEventListener('click', () => {
             const textToCopy = shortUrlLink.href;
             const textArea = document.createElement('textarea');
@@ -172,13 +173,49 @@
             textArea.select();
             try {
                 document.execCommand('copy');
-                copyFeedback.textContent = 'Copied to clipboard!';
+                copyFeedback.textContent = 'Copied!';
             } catch (err) {
                 copyFeedback.textContent = 'Failed to copy.';
             }
             document.body.removeChild(textArea);
             setTimeout(() => { copyFeedback.textContent = ''; }, 2000);
         });
+
+        // --- NEW: Fetch and Display Links ---
+        const linksTableBody = document.getElementById('links-table-body');
+        const linksLoading = document.getElementById('links-loading');
+        
+        async function fetchLinks() {
+            try {
+                const response = await fetch('/api/links');
+                if (!response.ok) throw new Error('Failed to fetch links.');
+                const links = await response.json();
+                
+                linksTableBody.innerHTML = ''; // Clear existing rows
+                if (links.length === 0) {
+                    linksTableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-gray-500">No links created yet.</td></tr>`;
+                } else {
+                    links.forEach(link => {
+                        const row = document.createElement('tr');
+                        const shortUrl = `${window.location.origin}/${link.slug}`;
+                        const formattedDate = new Date(link.created_at).toLocaleString();
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap"><a href="${shortUrl}" target="_blank" class="text-blue-600 hover:underline font-mono">${link.slug}</a></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate" style="max-width: 200px;" title="${link.url}">${link.url}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
+                        `;
+                        linksTableBody.appendChild(row);
+                    });
+                }
+                linksLoading.style.display = 'none';
+            } catch (error) {
+                linksLoading.textContent = `Error: ${error.message}`;
+                linksLoading.style.color = 'red';
+            }
+        }
+
+        // Fetch links when the page loads
+        document.addEventListener('DOMContentLoaded', fetchLinks);
     </script>
 </body>
 </html>
