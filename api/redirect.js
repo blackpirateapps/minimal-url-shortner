@@ -24,29 +24,36 @@ export default async function handler(req, res) {
       const { url: longUrl, password } = result.rows[0];
       
       if (password) {
-        // If password protected, redirect to the password page.
-        // The click will be logged after successful verification.
+        // This part is working correctly. The click is logged after verification.
         console.log(`[INFO][Redirect] Password required for slug: ${slug}.`);
         return res.redirect(302, `/password.html?slug=${slug}`);
       }
       
-      // --- START: Updated Analytics Logging ---
-      // For public links, we now AWAIT the database operations before redirecting.
+      // --- START: Fixed Analytics Logging ---
+      // For public links, we now use two separate awaited calls to ensure completion.
       try {
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const userAgent = req.headers['user-agent'];
         const referrer = req.headers['referer'];
         
-        await db.batch([
-          { sql: "INSERT INTO clicks (link_slug, ip_address, user_agent, referrer) VALUES (?, ?, ?, ?)", args: [slug, ip, userAgent, referrer] },
-          { sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?", args: [slug] }
-        ], 'write');
-        console.log(`[INFO][Redirect] Logged click for public slug: ${slug}`);
+        // Step 1: Insert the detailed click record and wait for it to finish.
+        await db.execute({
+          sql: "INSERT INTO clicks (link_slug, ip_address, user_agent, referrer) VALUES (?, ?, ?, ?)",
+          args: [slug, ip, userAgent, referrer]
+        });
+
+        // Step 2: Increment the counter on the main link table and wait for it to finish.
+        await db.execute({
+          sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?",
+          args: [slug]
+        });
+
+        console.log(`[INFO][Redirect] Successfully logged click for public slug: ${slug}`);
       } catch (dbError) {
         console.error(`[ERROR][Redirect] Failed to log analytics for slug ${slug}:`, dbError);
-        // We still redirect the user even if logging fails.
+        // Even if logging fails, we still redirect the user so the link works.
       }
-      // --- END: Updated Analytics Logging ---
+      // --- END: Fixed Analytics Logging ---
 
       console.log(`[INFO][Redirect] Redirecting ${slug} to ${longUrl}`);
       return res.redirect(308, longUrl);
