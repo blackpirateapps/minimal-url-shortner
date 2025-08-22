@@ -1,67 +1,76 @@
 // /api/index.js
 
+import { parse } from 'cookie';
+import jwt from 'jsonwebtoken';
+import { serialize } from 'cookie';
 import db from './_db.js'; 
 import { 
-  handleAddDomain, 
-  handleShortenUrl, 
-  handleGetLinks,
-  handleGetDomains,
-  handleDeleteDomain,
-  handleGetLinkDetails,
-  handleVerifyPassword,
-  handleDeleteLink,
-  handleUpdateLink
+  handleAddDomain, handleShortenUrl, handleGetLinks, handleGetDomains,
+  handleDeleteDomain, handleGetLinkDetails, handleVerifyPassword,
+  handleDeleteLink, handleUpdateLink
 } from './_handlers.js';
 
-export default async function handler(req, res) {
-  if (!db) {
-    console.error("[FATAL][API] Main handler cannot proceed because DB client is not available.");
-    return res.status(500).json({ error: "Server configuration error. Check logs." });
-  }
+const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
 
+export default async function handler(req, res) {
   const { method, url } = req;
   const path = url.split("?")[0];
 
   try {
     let bodyData = {};
     if (req.body) {
-      try {
-        bodyData = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
-      } catch (e) {
-        return res.status(400).json({ error: "Invalid JSON in request body." });
+      bodyData = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
+    }
+
+    // --- LOGIN ROUTE (Publicly Accessible) ---
+    if (path === "/api/login" && method === "POST") {
+      if (!DASHBOARD_PASSWORD) {
+        console.error("[FATAL][API] DASHBOARD_PASSWORD environment variable is not set.");
+        return res.status(500).json({ error: "Server configuration error." });
+      }
+      const { password, rememberMe } = bodyData;
+      if (password === DASHBOARD_PASSWORD) {
+        const token = jwt.sign({ user: 'admin' }, DASHBOARD_PASSWORD, { expiresIn: rememberMe ? '30d' : '24h' });
+        const cookie = serialize('auth_token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== 'development',
+          sameSite: 'strict',
+          maxAge: rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60,
+          path: '/',
+        });
+        res.setHeader('Set-Cookie', cookie);
+        return res.status(200).json({ message: 'Login successful.' });
+      } else {
+        return res.status(401).json({ error: 'Invalid password.' });
       }
     }
 
-    // --- API Routing Logic ---
-    if (path === "/api/verify-password" && method === "POST") {
-      return await handleVerifyPassword(req, res, db, bodyData);
-    }
-    if (path === "/api/link-details" && method === "GET") {
-      return await handleGetLinkDetails(req, res, db);
-    }
-    if (path === "/api/domains" && method === "GET") {
-      return await handleGetDomains(req, res, db);
-    }
-    if (path === "/api/domains" && method === "DELETE") {
-      return await handleDeleteDomain(req, res, db, bodyData);
-    }
-    if (path === "/api/links" && method === "GET") {
-      return await handleGetLinks(req, res, db);
-    }
-    if (path === "/api/links" && method === "DELETE") {
-      return await handleDeleteLink(req, res, db, bodyData);
-    }
-    if (path === "/api/links" && method === "PUT") {
-      return await handleUpdateLink(req, res, db, bodyData);
-    }
-    if (path === "/api/add-domain" && method === "POST") {
-      return await handleAddDomain(req, res, db, bodyData);
-    }
-    if (path === "/api/shorten" && method === "POST") {
-      return await handleShortenUrl(req, res, db, bodyData);
+    // --- AUTHENTICATION CHECK FOR ALL OTHER API ROUTES ---
+    try {
+      const cookies = parse(req.headers.cookie || '');
+      const token = cookies.auth_token;
+      if (!token) throw new Error('No auth token');
+      jwt.verify(token, DASHBOARD_PASSWORD);
+    } catch (error) {
+      return res.status(401).json({ error: 'Authentication required. Please log in again.' });
     }
 
-    console.log(`[WARN][API] No API route matched for path: ${path}. Returning 404.`);
+    // If authentication passes, connect to DB and proceed to protected routes
+    if (!db) {
+      return res.status(500).json({ error: "Database connection failed." });
+    }
+
+    // --- PROTECTED API ROUTES ---
+    if (path === "/api/verify-password" && method === "POST") return await handleVerifyPassword(req, res, db, bodyData);
+    if (path === "/api/link-details" && method === "GET") return await handleGetLinkDetails(req, res, db);
+    if (path === "/api/domains" && method === "GET") return await handleGetDomains(req, res, db);
+    if (path === "/api/domains" && method === "DELETE") return await handleDeleteDomain(req, res, db, bodyData);
+    if (path === "/api/links" && method === "GET") return await handleGetLinks(req, res, db);
+    if (path === "/api/links" && method === "DELETE") return await handleDeleteLink(req, res, db, bodyData);
+    if (path === "/api/links" && method === "PUT") return await handleUpdateLink(req, res, db, bodyData);
+    if (path === "/api/add-domain" && method === "POST") return await handleAddDomain(req, res, db, bodyData);
+    if (path === "/api/shorten" && method === "POST") return await handleShortenUrl(req, res, db, bodyData);
+
     return res.status(404).json({ error: "API route not found." });
 
   } catch (error) {

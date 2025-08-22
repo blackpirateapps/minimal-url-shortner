@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         // Auth check - must run before anything else
-        if (document.cookie.indexOf('auth_token=') === -1) {
+        if (document.cookie.indexOf('auth_token=') === -1 && window.location.pathname !== '/login.html') {
             window.location.href = '/login.html';
         }
         // Dark Mode Initializer - FIXED
@@ -129,7 +129,7 @@
                 </div>
                 <div>
                     <label for="edit-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password (optional)</label>
-                    <input type="password" id="edit-password" name="password" placeholder="Leave blank to keep unchanged" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                    <input type="password" id="edit-password" name="password" placeholder="Leave blank to remove password" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
                 </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" id="cancel-edit-btn" class="bg-gray-200 dark:bg-slate-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg">Cancel</button>
@@ -165,6 +165,8 @@
         async function fetchApi(url, options) {
             const response = await fetch(url, options);
             if (response.status === 401) {
+                // Clear the cookie just in case it's invalid
+                document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                 window.location.href = '/login.html';
                 throw new Error('Session expired.');
             }
@@ -178,10 +180,66 @@
         const domainsLoading = document.getElementById('domains-loading');
         const domainSelect = document.getElementById('domain-select');
         
-        async function fetchDomains() { /* ... same as before ... */ }
-        function renderDomains(domains) { /* ... same as before ... */ }
-        domainForm.addEventListener('submit', async (e) => { /* ... same as before, but use fetchApi ... */ });
-        domainsList.addEventListener('click', async (e) => { /* ... same as before, but use fetchApi ... */ });
+        async function fetchDomains() {
+            try {
+                const response = await fetchApi('/api/domains');
+                if (!response.ok) throw new Error('Failed to fetch domains.');
+                const domains = await response.json();
+                renderDomains(domains);
+                domainsLoading.style.display = 'none';
+            } catch (error) { domainsLoading.textContent = `Error: ${error.message}`; }
+        }
+
+        function renderDomains(domains) {
+            domainsList.innerHTML = '';
+            domainSelect.innerHTML = '';
+            if (domains.length === 0) {
+                domainsList.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">No domains added yet.</p>`;
+                domainSelect.innerHTML = `<option disabled selected>Please add a domain first</option>`;
+            } else {
+                domains.forEach(domain => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between bg-gray-50 dark:bg-slate-700 p-2 rounded-lg';
+                    div.innerHTML = `<span class="text-sm font-medium text-gray-800 dark:text-gray-200">${domain.hostname}</span><button data-hostname="${domain.hostname}" class="delete-domain-btn text-red-500 hover:text-red-700 text-xs font-semibold">DELETE</button>`;
+                    domainsList.appendChild(div);
+                    const option = document.createElement('option');
+                    option.value = domain.hostname;
+                    option.textContent = domain.hostname;
+                    domainSelect.appendChild(option);
+                });
+            }
+        }
+
+        domainForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const hostname = new FormData(domainForm).get('hostname');
+            domainMessage.textContent = 'Adding...';
+            try {
+                const response = await fetchApi('/api/add-domain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostname }) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+                domainMessage.textContent = result.message;
+                domainMessage.className = 'mt-4 text-sm text-green-600';
+                domainForm.reset();
+                await fetchDomains();
+            } catch (error) {
+                domainMessage.textContent = `Error: ${error.message}`;
+                domainMessage.className = 'mt-4 text-sm text-red-600';
+            }
+        });
+
+        domainsList.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('delete-domain-btn')) {
+                const hostname = e.target.dataset.hostname;
+                if (confirm(`Are you sure you want to delete ${hostname}?`)) {
+                    try {
+                        const response = await fetchApi('/api/domains', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostname }) });
+                        if (!response.ok) throw new Error((await response.json()).error);
+                        await fetchDomains();
+                    } catch (error) { alert(`Error: ${error.message}`); }
+                }
+            }
+        });
 
         // --- Link Management ---
         const shortenForm = document.getElementById('shorten-form');
@@ -226,16 +284,36 @@
             }
         }
         
-        shortenForm.addEventListener('submit', async (e) => { /* ... same as before, but use fetchApi ... */ });
+        shortenForm.addEventListener('submit', async (e) => {
+             e.preventDefault();
+            const payload = Object.fromEntries(new FormData(shortenForm).entries());
+            if (!payload.password) delete payload.password;
+            resultDiv.innerHTML = '';
+            errorMessage.textContent = '';
+            try {
+                const response = await fetchApi('/api/shorten', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+                resultDiv.innerHTML = `<div class="p-4 rounded-lg bg-green-100 dark:bg-green-900 border border-green-200 dark:border-green-800"><h3 class="font-semibold text-green-800 dark:text-green-200">Success!</h3><a href="${result.shortUrl}" target="_blank" class="font-mono text-green-600 dark:text-green-400 break-all">${result.shortUrl}</a></div>`;
+                shortenForm.reset();
+                await fetchLinks();
+            } catch (error) { errorMessage.textContent = `Error: ${error.message}`; }
+        });
         
         linksTableBody.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('copy-link-btn')) { /* ... */ }
+            if (e.target.classList.contains('copy-link-btn')) {
+                const urlToCopy = e.target.dataset.url;
+                navigator.clipboard.writeText(urlToCopy).then(() => {
+                    e.target.textContent = 'Copied!';
+                    setTimeout(() => { e.target.textContent = 'Copy'; }, 2000);
+                }).catch(err => console.error('Failed to copy', err));
+            }
             if (e.target.classList.contains('delete-link-btn')) {
                 const slug = e.target.dataset.slug;
                 if (confirm(`Are you sure you want to delete the link for "${slug}"?`)) {
                     try {
                         const response = await fetchApi('/api/links', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug }) });
-                        if (!response.ok) throw new Error('Failed to delete link.');
+                        if (!response.ok) throw new Error((await response.json()).error);
                         await fetchLinks();
                     } catch (error) { alert(`Error: ${error.message}`); }
                 }
@@ -259,7 +337,7 @@
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = Object.fromEntries(new FormData(editForm).entries());
-            if (!payload.password) delete payload.password; // Don't send empty password
+            if (!payload.password) delete payload.password;
             try {
                 const response = await fetchApi('/api/links', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) {
