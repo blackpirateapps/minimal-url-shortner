@@ -81,6 +81,25 @@
                         <label for="custom-slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Custom Slug (Optional)</label>
                         <input type="text" id="custom-slug" name="slug" placeholder="e.g., my-awesome-link" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
                     </div>
+                    
+                    <!-- ... inside the <form id="shorten-form"> ... -->
+
+<div>
+    <label for="custom-slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Custom Slug (Optional)</label>
+    <input type="text" id="custom-slug" name="slug" placeholder="e.g., my-awesome-link" class="w-full ...">
+</div>
+
+<!-- NEW: Password Field -->
+<div>
+    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password (Optional)</label>
+    <input type="password" id="password" name="password" placeholder="Protect this link" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+</div>
+
+<button type="submit" class="w-full bg-green-600 ...">Generate Short URL</button>
+
+<!-- ... rest of the file is the same ... -->
+
+                    
                     <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition">Generate Short URL</button>
                 </form>
                 <div id="result" class="mt-6"></div>

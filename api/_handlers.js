@@ -1,28 +1,87 @@
 // /api/_handlers.js
 import { customAlphabet } from "nanoid";
+import bcrypt from 'bcryptjs'; // Import the bcrypt library
+
 const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 7);
 
-// --- Handler to get detailed click data for a single link ---
+// --- UPDATED: Handler to verify a password and get the destination URL ---
+export async function handleVerifyPassword(req, res, db, bodyData) {
+  const { slug, password } = bodyData;
+  if (!slug || !password) {
+    return res.status(400).json({ error: "Slug and password are required." });
+  }
+
+  const result = await db.execute({
+    sql: "SELECT url, password FROM links WHERE slug = ?",
+    args: [slug]
+  });
+
+  if (result.rows.length === 0 || !result.rows[0].password) {
+    return res.status(404).json({ error: "Protected link not found." });
+  }
+
+  const link = result.rows[0];
+  
+  // Securely compare the provided password with the stored hash
+  const isPasswordCorrect = bcrypt.compareSync(password, link.password);
+
+  if (isPasswordCorrect) {
+    // Password is correct, return the destination URL
+    return res.status(200).json({ destinationUrl: link.url });
+  } else {
+    // Password is incorrect
+    return res.status(401).json({ error: "Invalid password." });
+  }
+}
+
+// --- UPDATED: Handler for creating a short URL ---
+export async function handleShortenUrl(req, res, db, bodyData) {
+  const { url: longUrl, slug: customSlug, hostname, password } = bodyData;
+  if (!longUrl || !hostname) return res.status(400).json({ error: "Destination URL and a domain are required." });
+  
+  let slug;
+  if (customSlug) {
+    const existing = await db.execute({ sql: "SELECT slug FROM links WHERE slug = ?", args: [customSlug] });
+    if (existing.rows.length > 0) return res.status(409).json({ error: `Slug "${customSlug}" is already in use.` });
+    slug = customSlug;
+  } else {
+    let existing;
+    do {
+      slug = nanoid();
+      existing = await db.execute({ sql: "SELECT slug FROM links WHERE slug = ?", args: [slug] });
+    } while (existing.rows.length > 0);
+  }
+  
+  let hashedPassword = null;
+  if (password) {
+    // If a password is provided, hash it before storing
+    const salt = bcrypt.genSaltSync(10);
+    hashedPassword = bcrypt.hashSync(password, salt);
+  }
+
+  await db.execute({ 
+    sql: "INSERT INTO links (slug, url, hostname, password) VALUES (?, ?, ?, ?)", 
+    args: [slug, longUrl, hostname, hashedPassword] 
+  });
+  
+  const shortUrl = `https://${hostname}/${slug}`;
+  return res.status(200).json({ shortUrl });
+}
+
+// --- Other handlers (no changes needed) ---
 export async function handleGetLinkDetails(req, res, db) {
   const { slug } = req.query;
-  if (!slug) {
-    return res.status(400).json({ error: "Slug is required." });
-  }
+  if (!slug) return res.status(400).json({ error: "Slug is required." });
   const clicksResult = await db.execute({
     sql: "SELECT ip_address, user_agent, referrer, clicked_at FROM clicks WHERE link_slug = ? ORDER BY clicked_at DESC",
     args: [slug]
   });
   return res.status(200).json(clicksResult.rows);
 }
-
-// --- UPDATED: Handler for fetching all links ---
 export async function handleGetLinks(req, res, db) {
-  // Now also fetches the hostname and click_count
   const linksResult = await db.execute("SELECT slug, url, created_at, click_count, hostname FROM links ORDER BY created_at DESC");
   return res.status(200).json(linksResult.rows);
 }
-
-// --- Domain Handlers ---
 export async function handleGetDomains(req, res, db) {
   const domainsResult = await db.execute("SELECT hostname, added_at FROM domains ORDER BY added_at ASC");
   return res.status(200).json(domainsResult.rows);
@@ -42,32 +101,4 @@ export async function handleAddDomain(req, res, db, bodyData) {
   if (existing.rows.length > 0) return res.status(409).json({ error: `Domain "${hostname}" already exists.` });
   await db.execute({ sql: "INSERT INTO domains (hostname) VALUES (?)", args: [hostname] });
   return res.status(201).json({ message: "Domain added successfully." });
-}
-
-// --- UPDATED: Handler for creating a short URL ---
-export async function handleShortenUrl(req, res, db, bodyData) {
-  const { url: longUrl, slug: customSlug, hostname } = bodyData;
-  if (!longUrl || !hostname) return res.status(400).json({ error: "Destination URL and a domain are required." });
-  
-  let slug;
-  if (customSlug) {
-    const existing = await db.execute({ sql: "SELECT slug FROM links WHERE slug = ?", args: [customSlug] });
-    if (existing.rows.length > 0) return res.status(409).json({ error: `Slug "${customSlug}" is already in use.` });
-    slug = customSlug;
-  } else {
-    let existing;
-    do {
-      slug = nanoid();
-      existing = await db.execute({ sql: "SELECT slug FROM links WHERE slug = ?", args: [slug] });
-    } while (existing.rows.length > 0);
-  }
-  
-  // Now saves the hostname along with the slug and URL
-  await db.execute({ 
-    sql: "INSERT INTO links (slug, url, hostname) VALUES (?, ?, ?)", 
-    args: [slug, longUrl, hostname] 
-  });
-  
-  const shortUrl = `https://${hostname}/${slug}`;
-  return res.status(200).json({ shortUrl });
 }

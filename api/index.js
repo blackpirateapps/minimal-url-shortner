@@ -7,11 +7,13 @@ import {
   handleGetLinks,
   handleGetDomains,
   handleDeleteDomain,
-  handleGetLinkDetails // Import the new handler
+  handleGetLinkDetails,
+  handleVerifyPassword
 } from './_handlers.js';
 
 export default async function handler(req, res) {
   if (!db) {
+    console.error("[FATAL][API] Main handler cannot proceed because DB client is not available.");
     return res.status(500).json({ error: "Server configuration error. Check logs." });
   }
 
@@ -20,11 +22,19 @@ export default async function handler(req, res) {
 
   try {
     let bodyData = {};
+    // Vercel populates req.body, but it might not be parsed.
     if (req.body) {
-      bodyData = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
+      try {
+        bodyData = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
+      } catch (e) {
+        return res.status(400).json({ error: "Invalid JSON in request body." });
+      }
     }
 
-    // --- Routing Logic ---
+    // --- API Routing Logic ---
+    if (path === "/api/verify-password" && method === "POST") {
+      return await handleVerifyPassword(req, res, db, bodyData);
+    }
     if (path === "/api/link-details" && method === "GET") {
       return await handleGetLinkDetails(req, res, db);
     }
@@ -44,6 +54,8 @@ export default async function handler(req, res) {
       return await handleShortenUrl(req, res, db, bodyData);
     }
 
+    // --- Fallback for any unknown /api/ calls ---
+    console.log(`[WARN][API] No API route matched for path: ${path}. Returning 404.`);
     return res.status(404).json({ error: "API route not found." });
 
   } catch (error) {

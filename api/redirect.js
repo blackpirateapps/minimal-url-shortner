@@ -15,40 +15,39 @@ export default async function handler(req, res) {
   }
   
   try {
-    const result = await db.execute({ sql: "SELECT url FROM links WHERE slug = ?", args: [slug] });
+    // Fetch the URL and the password
+    const result = await db.execute({ 
+      sql: "SELECT url, password FROM links WHERE slug = ?", 
+      args: [slug] 
+    });
 
     if (result.rows.length > 0) {
-      const longUrl = result.rows[0].url;
+      const { url: longUrl, password } = result.rows[0];
       
-      // --- START: Analytics Logging ---
-      // This block runs in the background and does not delay the redirect.
+      // If a password is set for this link, redirect to the password entry page
+      if (password) {
+        console.log(`[INFO][Redirect] Password required for slug: ${slug}. Redirecting to password page.`);
+        return res.redirect(302, `/password.html?slug=${slug}`);
+      }
+      
+      // If no password, log analytics in the background and redirect immediately
       (async () => {
         try {
-          // Get analytics data from request headers
           const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
           const userAgent = req.headers['user-agent'];
           const referrer = req.headers['referer'];
-
-          // Use a transaction to ensure both operations succeed or fail together
           await db.batch([
-            {
-              sql: "INSERT INTO clicks (link_slug, ip_address, user_agent, referrer) VALUES (?, ?, ?, ?)",
-              args: [slug, ip, userAgent, referrer]
-            },
-            {
-              sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?",
-              args: [slug]
-            }
+            { sql: "INSERT INTO clicks (link_slug, ip_address, user_agent, referrer) VALUES (?, ?, ?, ?)", args: [slug, ip, userAgent, referrer] },
+            { sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?", args: [slug] }
           ], 'write');
-          console.log(`[INFO][Redirect] Logged click for slug: ${slug}`);
         } catch (dbError) {
           console.error(`[ERROR][Redirect] Failed to log analytics for slug ${slug}:`, dbError);
         }
       })();
-      // --- END: Analytics Logging ---
 
       console.log(`[INFO][Redirect] Redirecting ${slug} to ${longUrl}`);
       return res.redirect(308, longUrl);
+
     } else {
       console.log(`[WARN][Redirect] Slug not found: ${slug}`);
       return res.status(404).send('Short link not found.');

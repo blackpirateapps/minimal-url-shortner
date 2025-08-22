@@ -1,14 +1,18 @@
 {
-  "name": "vercel-turso-shortener-v2",
+  "name": "vercel-turso-shortener",
   "version": "1.0.0",
-  "description": "An advanced URL shortener with a login dashboard and custom domains.",
+  "description": "A URL shortener using Vercel Functions and Turso DB.",
   "main": "api/index.js",
   "type": "module",
   "scripts": {
     "start": "vercel dev"
   },
   "dependencies": {
-    "@libsql/client": "^0.15.12",
-    "nanoid": "^5.1.5"
+    "@libsql/client": "latest",
+    "bcryptjs": "latest",
+    "nanoid": "latest"
+  },
+  "devDependencies": {
+    "vercel": "latest"
   }
 }
