@@ -1,6 +1,6 @@
 // api/[slug].js
-import { db } from '../_lib/db.js'; // <-- UPDATED PATH
-import { handler as dashboardHandler } from './index.js';
+import { db } from '../_lib/db.js';
+import dashboardHandler from './index.js'; // <-- UPDATED: Correctly imports the default export
 
 export default async function handler(request, response) {
     const slug = request.query.slug;
