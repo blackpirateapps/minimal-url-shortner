@@ -9,12 +9,8 @@ const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN;
 
 // --- DB Client Initialization ---
 let db;
-
-// This is the new, safer initialization block.
-// It checks for the environment variables before trying to create the database client.
 if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
   console.error("FATAL: Turso database URL or Auth Token is not set in environment variables.");
-  // db remains uninitialized
 } else {
   try {
     db = createClient({
@@ -23,7 +19,6 @@ if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
     });
   } catch (e) {
     console.error("FATAL: Failed to create Turso client.", e);
-    // db remains uninitialized
   }
 }
 
@@ -35,20 +30,33 @@ const nanoid = customAlphabet(
 
 // --- Main Handler for Vercel Serverless Function ---
 export default async function handler(req, res) {
-  // This new check at the top of the handler provides a clear error response
-  // if the database connection failed to initialize.
   if (!db) {
-    console.error("Handler invoked, but DB client is not initialized. Check startup logs for FATAL errors.");
-    return res.status(500).json({ error: "Internal Server Configuration Error. Administrator has been notified." });
+    console.error("Handler invoked, but DB client is not initialized.");
+    return res.status(500).json({ error: "Internal Server Configuration Error." });
   }
 
-  const { method, url, body } = req;
+  const { method, url } = req;
   const path = url.split("?")[0];
+
+  // --- START: Patched Logic ---
+  // Manually parse the request body if it's JSON
+  let bodyData = {};
+  // Vercel populates req.body with the raw string/buffer, so we need to parse it.
+  if (req.body && req.headers["content-type"]?.includes("application/json")) {
+    try {
+      // If req.body is already an object (local dev environment), use it. Otherwise, parse.
+      bodyData = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
+    } catch (e) {
+      console.error("Invalid JSON body:", req.body);
+      return res.status(400).json({ error: "Invalid JSON in request body." });
+    }
+  }
+  // --- END: Patched Logic ---
 
   try {
     // --- API Route: Add a new custom domain ---
     if (path === "/api/add-domain" && method === "POST") {
-      const { hostname } = body;
+      const { hostname } = bodyData; // Use bodyData
       if (!hostname || typeof hostname !== "string") {
         return res.status(400).json({ error: "Invalid hostname provided." });
       }
@@ -61,7 +69,7 @@ export default async function handler(req, res) {
 
     // --- API Route: Create a new short link ---
     if (path === "/api/shorten" && method === "POST") {
-      const { url: longUrl } = body;
+      const { url: longUrl } = bodyData; // Use bodyData
       if (!longUrl || typeof longUrl !== "string" || !longUrl.startsWith('http')) {
         return res.status(400).json({ error: "A valid URL starting with http or https is required." });
       }
@@ -96,11 +104,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Internal Server Error." });
   }
 }
-```
-
-### **What to do next:**
-
-1.  **Update the Code:** Replace the code in `api/index.js` with the version above.
-2.  **Double-Check Variables:** Please go back to your Vercel project **Settings -> Environment Variables** one more time and confirm `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are there, correctly spelled, and have the correct values.
-3.  **Redeploy:** Commit the code change and let Vercel create a new deployment.
-4.  **Check Logs Again:** Go to the logs for the new deployment. If the environment variables are still the problem, you will now see a very clear error message: **"FATAL: Turso database URL or Auth Token is not set..."**. This will confirm the root cau
