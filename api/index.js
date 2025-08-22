@@ -10,6 +10,7 @@ import {
   handleDeleteLink, handleUpdateLink
 } from './_handlers.js';
 
+// It's still good practice to define this at the top level
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
 
 export default async function handler(req, res) {
@@ -46,11 +47,12 @@ export default async function handler(req, res) {
     }
 
     // --- AUTHENTICATION CHECK FOR ALL OTHER API ROUTES ---
-    if (!DASHBOARD_PASSWORD) {
-        console.error("[FATAL][API] DASHBOARD_PASSWORD is not set for auth check.");
-        return res.status(500).json({ error: "Server configuration error." });
-    }
     try {
+      // FIXED: Check for the password variable *inside* the handler to prevent race conditions.
+      if (!DASHBOARD_PASSWORD) {
+          console.error("[FATAL][API] DASHBOARD_PASSWORD is not available for auth check.");
+          return res.status(500).json({ error: "Server configuration error." });
+      }
       const cookies = parse(req.headers.cookie || '');
       const token = cookies.auth_token;
       if (!token) throw new Error('No auth token');
