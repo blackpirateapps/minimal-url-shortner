@@ -8,7 +8,9 @@ import {
   handleGetDomains,
   handleDeleteDomain,
   handleGetLinkDetails,
-  handleVerifyPassword
+  handleVerifyPassword,
+  handleDeleteLink,
+  handleUpdateLink
 } from './_handlers.js';
 
 export default async function handler(req, res) {
@@ -22,7 +24,6 @@ export default async function handler(req, res) {
 
   try {
     let bodyData = {};
-    // Vercel populates req.body, but it might not be parsed.
     if (req.body) {
       try {
         bodyData = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
@@ -47,6 +48,12 @@ export default async function handler(req, res) {
     if (path === "/api/links" && method === "GET") {
       return await handleGetLinks(req, res, db);
     }
+    if (path === "/api/links" && method === "DELETE") {
+      return await handleDeleteLink(req, res, db, bodyData);
+    }
+    if (path === "/api/links" && method === "PUT") {
+      return await handleUpdateLink(req, res, db, bodyData);
+    }
     if (path === "/api/add-domain" && method === "POST") {
       return await handleAddDomain(req, res, db, bodyData);
     }
@@ -54,7 +61,6 @@ export default async function handler(req, res) {
       return await handleShortenUrl(req, res, db, bodyData);
     }
 
-    // --- Fallback for any unknown /api/ calls ---
     console.log(`[WARN][API] No API route matched for path: ${path}. Returning 404.`);
     return res.status(404).json({ error: "API route not found." });
 

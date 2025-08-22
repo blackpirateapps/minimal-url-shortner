@@ -10,6 +10,8 @@
   "dependencies": {
     "@libsql/client": "latest",
     "bcryptjs": "latest",
+    "cookie": "latest",
+    "jsonwebtoken": "latest",
     "nanoid": "latest"
   },
   "devDependencies": {
