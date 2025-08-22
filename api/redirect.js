@@ -30,11 +30,11 @@ export default async function handler(req, res) {
       }
       
       // --- START: Fixed Analytics Logging ---
-      // For public links, we now use two separate awaited calls to ensure completion.
       try {
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        const userAgent = req.headers['user-agent'];
-        const referrer = req.headers['referer'];
+        // FIXED: Ensure undefined headers are converted to null for the database
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || null;
+        const userAgent = req.headers['user-agent'] || null;
+        const referrer = req.headers['referer'] || null;
         
         // Step 1: Insert the detailed click record and wait for it to finish.
         await db.execute({

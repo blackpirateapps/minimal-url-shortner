@@ -47,24 +47,30 @@ export async function handleUpdateLink(req, res, db, bodyData) {
   return res.status(200).json({ message: "Link updated successfully." });
 }
 
-// --- Handler to verify a password ---
+// --- UPDATED: Handler to verify a password ---
 export async function handleVerifyPassword(req, res, db, bodyData) {
   const { slug, password } = bodyData;
   if (!slug || !password) return res.status(400).json({ error: "Slug and password are required." });
   const result = await db.execute({ sql: "SELECT url, password FROM links WHERE slug = ?", args: [slug] });
   if (result.rows.length === 0 || !result.rows[0].password) return res.status(404).json({ error: "Protected link not found." });
+  
   const link = result.rows[0];
   const isPasswordCorrect = bcrypt.compareSync(password, link.password);
+
   if (isPasswordCorrect) {
     try {
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        const userAgent = req.headers['user-agent'];
-        const referrer = req.headers['referer'];
+        // FIXED: Ensure undefined headers are converted to null
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || null;
+        const userAgent = req.headers['user-agent'] || null;
+        const referrer = req.headers['referer'] || null;
+        
         await db.batch([
           { sql: "INSERT INTO clicks (link_slug, ip_address, user_agent, referrer) VALUES (?, ?, ?, ?)", args: [slug, ip, userAgent, referrer] },
           { sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?", args: [slug] }
         ], 'write');
-    } catch (dbError) { console.error(`[ERROR][API] Failed to log analytics for protected slug ${slug}:`, dbError); }
+    } catch (dbError) { 
+        console.error(`[ERROR][API] Failed to log analytics for protected slug ${slug}:`, dbError); 
+    }
     return res.status(200).json({ destinationUrl: link.url });
   } else {
     return res.status(401).json({ error: "Invalid password." });
