@@ -1,13 +1,14 @@
 // /api/index.js
 
 import db from './_db.js'; 
-import { handleAddDomain, handleShortenUrl, handleRedirect, handleGetLinks } from './_handlers.js';
+// We no longer need handleRedirect here
+import { handleAddDomain, handleShortenUrl, handleGetLinks } from './_handlers.js';
 
 export default async function handler(req, res) {
-  console.log(`[INFO] Handler invoked for method=${req.method} path=${req.url}`);
+  console.log(`[INFO][API] Handler invoked for method=${req.method} path=${req.url}`);
 
   if (!db) {
-    console.error("[FATAL] Main handler cannot proceed because DB client is not available.");
+    console.error("[FATAL][API] Main handler cannot proceed because DB client is not available.");
     return res.status(500).json({ error: "Server configuration error. Check logs." });
   }
 
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // --- Routing Logic ---
+    // --- Routing Logic (API only) ---
     if (path === "/api/links" && method === "GET") {
       return await handleGetLinks(req, res, db);
     }
@@ -36,21 +37,13 @@ export default async function handler(req, res) {
     if (path === "/api/shorten" && method === "POST") {
       return await handleShortenUrl(req, res, db, bodyData);
     }
-    
-    const slug = path.substring(1);
-    if (method === "GET" && slug && slug !== 'api' && !slug.includes('/')) {
-        const redirectResult = await handleRedirect(req, res, db, slug);
-        if (redirectResult) {
-            return redirectResult;
-        }
-    }
 
-    // --- Fallback ---
-    console.log(`[WARN] No route matched for path: ${path}. Returning 404.`);
-    return res.status(404).json({ error: "Not Found" });
+    // --- Fallback for any unknown /api/ calls ---
+    console.log(`[WARN][API] No API route matched for path: ${path}. Returning 404.`);
+    return res.status(404).json({ error: "API route not found." });
 
   } catch (error) {
-    console.error("[FATAL] An unhandled error occurred within the main handler:", error);
+    console.error("[FATAL][API] An unhandled error occurred:", error);
     return res.status(500).json({ error: "Internal Server Error. Check logs." });
   }
 }
