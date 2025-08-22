@@ -1,8 +1,7 @@
 // api/shorten.js
-import { db } from '../_lib/db.js';
+import { db } from './_lib/db.js';
 import { nanoid } from 'nanoid';
 
-// The password is read from Vercel Environment Variables
 const ADMIN_PASSWORD = process.env.DASHBOARD_PASSWORD;
 
 export default async function handler(request, response) {
@@ -12,32 +11,38 @@ export default async function handler(request, response) {
 
     const { url, password } = request.body;
 
-    // Password protection check
+    // 1. Authenticate the request
     if (password !== ADMIN_PASSWORD) {
-        return response.status(401).json({ error: 'Unauthorized' });
+        return response.status(401).json({ error: 'Unauthorized: Invalid password.' });
     }
 
+    // 2. Validate the input
     if (!url) {
-        return response.status(400).json({ error: 'URL is required' });
+        return response.status(400).json({ error: 'URL is required.' });
+    }
+    try {
+        new URL(url); // Check if the URL is valid
+    } catch (e) {
+        return response.status(400).json({ error: 'Invalid URL format.' });
     }
 
     try {
-        // Generate a unique, short, URL-friendly slug
-        const slug = nanoid(7); // e.g., 'y9f7aZ2'
-
-        // Insert the new link into the database
+        // 3. Generate a unique slug and save to the database
+        const slug = nanoid(8); // e.g., 'aB3dEfG9'
         await db.execute({
             sql: "INSERT INTO links (slug, url) VALUES (?, ?)",
             args: [slug, url],
         });
         
-        // Construct the full short URL to return to the user
-        const shortUrl = `https://${request.headers.host}/api/r/${slug}`;
+        // 4. Return the full short URL
+        const host = request.headers['x-forwarded-host'] || request.headers.host;
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        const shortUrl = `${protocol}://${host}/${slug}`;
 
         return response.status(200).json({ shortUrl });
 
     } catch (error) {
         console.error(error);
-        return response.status(500).json({ error: 'Failed to create short link' });
+        return response.status(500).json({ error: 'Database error: Failed to create short link.' });
     }
 }
