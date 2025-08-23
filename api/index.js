@@ -17,11 +17,10 @@ const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
 
 export default async function handler(req, res) {
   // --- CORS HANDLING FOR OBSIDIAN PLUGIN ---
-  // This block allows the Obsidian plugin to make requests to your API
-  res.setHeader('Access-Control-Allow-Origin', 'app://obsidian.md');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+  // --- CORS HANDLING ---
+res.setHeader('Access-Control-Allow-Origin', '*');
+res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   // Respond to preflight requests (sent by browsers/fetch clients to check CORS)
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -29,6 +28,7 @@ export default async function handler(req, res) {
   // --- END CORS HANDLING ---
 
   const { method, url } = req;
+  // The path no longer includes '/api' after the Vercel rewrite
   const path = url.split("?")[0];
 
   try {
@@ -39,9 +39,10 @@ export default async function handler(req, res) {
     }
 
     // --- PUBLICLY ACCESSIBLE ROUTES ---
+    // Note the paths are now checked without the '/api' prefix
 
     // LOGIN ROUTE
-    if (path === "/api/login" && method === "POST") {
+    if (path === "/login" && method === "POST") {
       if (!DASHBOARD_PASSWORD) {
         console.error("[FATAL][API] DASHBOARD_PASSWORD environment variable is not set.");
         return res.status(500).json({ error: "Server configuration error." });
@@ -64,7 +65,7 @@ export default async function handler(req, res) {
     }
 
     // VERIFY LINK PASSWORD ROUTE
-    if (path === "/api/verify-password" && method === "POST") {
+    if (path === "/verify-password" && method === "POST") {
         if (!db) {
             return res.status(500).json({ error: "Database connection failed." });
         }
@@ -72,7 +73,7 @@ export default async function handler(req, res) {
     }
 
     // GET PASTE CONTENT ROUTE (Public)
-    if (path === "/api/get-paste" && method === "GET") {
+    if (path === "/get-paste" && method === "GET") {
         if (!db) {
             return res.status(500).json({ error: "Database connection failed." });
         }
@@ -120,17 +121,18 @@ export default async function handler(req, res) {
     }
 
     // --- PROTECTED API ROUTES ---
-    if (path === "/api/create-paste" && method === "POST") return await handleCreatePaste(req, res, db, bodyData);
-    if (path === "/api/link-details" && method === "GET") return await handleGetLinkDetails(req, res, db);
-    if (path === "/api/domains" && method === "GET") return await handleGetDomains(req, res, db);
-    if (path === "/api/domains" && method === "DELETE") return await handleDeleteDomain(req, res, db, bodyData);
-    if (path === "/api/links" && method === "GET") return await handleGetLinks(req, res, db);
-    if (path === "/api/links" && method === "DELETE") return await handleDeleteLink(req, res, db, bodyData);
-    if (path === "/api/links" && method === "PUT") return await handleUpdateLink(req, res, db, bodyData);
-    if (path === "/api/add-domain" && method === "POST") return await handleAddDomain(req, res, db, bodyData);
-    if (path === "/api/shorten" && method === "POST") return await handleShortenUrl(req, res, db, bodyData);
+    // Note the paths are now checked without the '/api' prefix
+    if (path === "/create-paste" && method === "POST") return await handleCreatePaste(req, res, db, bodyData);
+    if (path === "/link-details" && method === "GET") return await handleGetLinkDetails(req, res, db);
+    if (path === "/domains" && method === "GET") return await handleGetDomains(req, res, db);
+    if (path === "/domains" && method === "DELETE") return await handleDeleteDomain(req, res, db, bodyData);
+    if (path === "/links" && method === "GET") return await handleGetLinks(req, res, db);
+    if (path === "/links" && method === "DELETE") return await handleDeleteLink(req, res, db, bodyData);
+    if (path === "/links" && method === "PUT") return await handleUpdateLink(req, res, db, bodyData);
+    if (path === "/add-domain" && method === "POST") return await handleAddDomain(req, res, db, bodyData);
+    if (path === "/shorten" && method === "POST") return await handleShortenUrl(req, res, db, bodyData);
 
-    return res.status(404).json({ error: "API route not found." });
+    return res.status(404).json({ error: `API route not found for path: ${path}` });
 
   } catch (error) {
     console.error("[FATAL][API] An unhandled error occurred:", error);
