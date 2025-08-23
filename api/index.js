@@ -3,8 +3,8 @@
 import { parse } from 'cookie';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
-import db from './_db.js'; 
-import { 
+import db from './_db.js';
+import {
   handleAddDomain, handleShortenUrl, handleGetLinks, handleGetDomains,
   handleDeleteDomain, handleGetLinkDetails, handleVerifyPassword,
   handleDeleteLink, handleUpdateLink
@@ -24,7 +24,9 @@ export default async function handler(req, res) {
       bodyData = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
     }
 
-    // --- LOGIN ROUTE (Publicly Accessible) ---
+    // --- PUBLICLY ACCESSIBLE ROUTES ---
+
+    // LOGIN ROUTE
     if (path === "/api/login" && method === "POST") {
       if (!DASHBOARD_PASSWORD) {
         console.error("[FATAL][API] DASHBOARD_PASSWORD environment variable is not set.");
@@ -47,9 +49,18 @@ export default async function handler(req, res) {
       }
     }
 
+    // VERIFY PASSWORD ROUTE (FIXED)
+    // This route is now public to allow non-authenticated users to unlock links.
+    if (path === "/api/verify-password" && method === "POST") {
+        if (!db) {
+            return res.status(500).json({ error: "Database connection failed." });
+        }
+        return await handleVerifyPassword(req, res, db, bodyData);
+    }
+
+
     // --- AUTHENTICATION CHECK FOR ALL OTHER API ROUTES ---
     try {
-      // FIXED: Check for the password variable *inside* the handler to prevent race conditions.
       if (!DASHBOARD_PASSWORD) {
           console.error("[FATAL][API] DASHBOARD_PASSWORD is not available for auth check.");
           return res.status(500).json({ error: "Server configuration error." });
@@ -68,7 +79,6 @@ export default async function handler(req, res) {
     }
 
     // --- PROTECTED API ROUTES ---
-    if (path === "/api/verify-password" && method === "POST") return await handleVerifyPassword(req, res, db, bodyData);
     if (path === "/api/link-details" && method === "GET") return await handleGetLinkDetails(req, res, db);
     if (path === "/api/domains" && method === "GET") return await handleGetDomains(req, res, db);
     if (path === "/api/domains" && method === "DELETE") return await handleDeleteDomain(req, res, db, bodyData);
