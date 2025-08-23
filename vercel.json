@@ -5,7 +5,11 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/:slug((?!api/|favicon.ico).*)",
+      "source": "/p/:slug",
+      "destination": "/api/view.js?slug=:slug"
+    },
+    {
+      "source": "/:slug((?!api/|favicon.ico|p/).*)",
       "destination": "/api/redirect.js?slug=:slug"
     }
   ]

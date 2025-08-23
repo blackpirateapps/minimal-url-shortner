@@ -12,6 +12,7 @@
     "bcryptjs": "latest",
     "cookie": "latest",
     "jsonwebtoken": "latest",
+    "marked": "latest",  
     "nanoid": "latest"
   },
   "devDependencies": {
