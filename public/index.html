@@ -165,13 +165,19 @@
         const dashboardSection = document.getElementById('dashboard-section');
 
         // --- Auth Check & Page Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.cookie.indexOf('auth_token=') > -1) {
-                showDashboard();
-            } else {
-                showLogin();
-            }
-        });
+        document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // If this succeeds, the cookie is present & valid
+    const resp = await fetch('/api/links');
+    if (resp.ok) {
+      showDashboard();
+    } else {
+      showLogin();
+    }
+  } catch {
+    showLogin();
+  }
+});
 
         function showLogin() {
             dashboardSection.classList.add('hidden');
