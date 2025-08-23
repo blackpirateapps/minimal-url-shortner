@@ -6,7 +6,7 @@
     },
     {
       "source": "/p/:slug",
-      "destination": "/api/view.js?slug=:slug"
+      "destination": "/public/paste.html"
     },
     {
       "source": "/:slug((?!api/|favicon.ico|p/).*)",

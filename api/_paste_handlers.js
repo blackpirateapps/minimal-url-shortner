@@ -2,10 +2,43 @@
 import { customAlphabet } from "nanoid";
 import bcrypt from 'bcryptjs';
 
-const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 10); // Longer slug for pastes
+const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 10);
 
-// --- Handler for creating a paste ---
+// --- Handler for GETTING a paste ---
+export async function handleGetPaste(req, res, db) {
+  const { slug } = req.query;
+  if (!slug) {
+    return res.status(400).json({ error: "Paste identifier is required." });
+  }
+
+  const result = await db.execute({
+    sql: "SELECT content, password, expires_at FROM pastes WHERE slug = ?",
+    args: [slug],
+  });
+
+  if (result.rows.length === 0) {
+    return res.status(404).json({ error: "Paste not found." });
+  }
+
+  const paste = result.rows[0];
+
+  // Check for expiration
+  if (paste.expires_at && new Date(paste.expires_at) < new Date()) {
+    await db.execute({ sql: "DELETE FROM pastes WHERE slug = ?", args: [slug] });
+    return res.status(410).json({ error: "This paste has expired and has been deleted." });
+  }
+
+  // Handle password protection (future enhancement)
+  if (paste.password) {
+      return res.status(403).json({ error: "This paste is password protected."})
+  }
+
+  return res.status(200).json({ content: paste.content });
+}
+
+// --- Handler for CREATING a paste ---
 export async function handleCreatePaste(req, res, db, bodyData) {
+  // ... (this existing function remains unchanged)
   const { content, hostname, password, expires } = bodyData;
 
   if (!content || !hostname) {

@@ -9,7 +9,8 @@ import {
   handleDeleteDomain, handleGetLinkDetails, handleVerifyPassword,
   handleDeleteLink, handleUpdateLink
 } from './_handlers.js';
-import { handleCreatePaste } from './_paste_handlers.js'; // Import for paste feature
+// Import BOTH paste handlers
+import { handleCreatePaste, handleGetPaste } from './_paste_handlers.js';
 
 // Load the password from environment variables at the top level
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
@@ -50,13 +51,20 @@ export default async function handler(req, res) {
       }
     }
 
-    // VERIFY PASSWORD ROUTE (FIXED)
-    // This route is public to allow non-authenticated users to unlock links.
+    // VERIFY LINK PASSWORD ROUTE
     if (path === "/api/verify-password" && method === "POST") {
         if (!db) {
             return res.status(500).json({ error: "Database connection failed." });
         }
         return await handleVerifyPassword(req, res, db, bodyData);
+    }
+
+    // **NEW** GET PASTE CONTENT ROUTE (Public)
+    if (path === "/api/get-paste" && method === "GET") {
+        if (!db) {
+            return res.status(500).json({ error: "Database connection failed." });
+        }
+        return await handleGetPaste(req, res, db);
     }
 
 

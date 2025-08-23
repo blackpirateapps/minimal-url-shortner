@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Paste</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 2em; }
+    </style>
+</head>
+<body>
+    <div id="paste-content">
+        <p>Loading...</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const contentDiv = document.getElementById('paste-content');
+            try {
+                // Get the unique 'slug' from the URL
+                const slug = window.location.pathname.split('/').pop();
+                if (!slug) {
+                    throw new Error('No paste identifier found in the URL.');
+                }
+
+                // Fetch the paste data from our new API endpoint
+                const response = await fetch(`/api/get-paste?slug=${slug}`);
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Could not load paste.');
+                }
+
+                // Convert the markdown content to HTML and display it
+                contentDiv.innerHTML = marked.parse(result.content);
+
+            } catch (error) {
+                contentDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
