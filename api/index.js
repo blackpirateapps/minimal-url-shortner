@@ -16,6 +16,18 @@ import { handleCreatePaste, handleGetPaste } from './_paste_handlers.js';
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
 
 export default async function handler(req, res) {
+  // --- CORS HANDLING FOR OBSIDIAN PLUGIN ---
+  // This block allows the Obsidian plugin to make requests to your API
+  res.setHeader('Access-Control-Allow-Origin', 'app://obsidian.md');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Respond to preflight requests (sent by browsers/fetch clients to check CORS)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  // --- END CORS HANDLING ---
+
   const { method, url } = req;
   const path = url.split("?")[0];
 
