@@ -5,8 +5,8 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/p/*",
-      "destination": "/public/paste.html"
+      "source": "/p/:slug",
+      "destination": "/paste.html"
     },
     {
       "source": "/:slug((?!api/|favicon.ico|p/).*)",
