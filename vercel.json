@@ -5,7 +5,7 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/p/:slug",
+      "source": "/p/*",
       "destination": "/public/paste.html"
     },
     {
