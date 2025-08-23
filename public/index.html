@@ -16,108 +16,118 @@
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .card { background-color: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .dark .card { background-color: rgba(30, 41, 59, 0.8); border: 1px solid rgba(51, 65, 85, 0.5); }
+        /* Custom Properties for Fresh & Energetic Theme */
+        :root {
+            --bg-light: #FFFFFF;
+            --text-light: #212121;
+            --card-light: #F8F9FA;
+            --primary: #4CAF50;
+            --primary-hover: #45a049;
+            --accent: #FFC107;
+            --info: #2196F3;
+            --info-hover: #1e88e5;
+            --border-light: #E0E0E0;
+
+            --bg-dark: #121212;
+            --text-dark: #E0E0E0;
+            --card-dark: #1E1E1E;
+            --info-dark: #64B5F6;
+            --info-dark-hover: #42a5f5;
+            --border-dark: #424242;
+        }
         .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 min-h-screen p-4 md:p-8 transition-colors duration-300">
+<body class="bg-white dark:bg-[#121212] min-h-screen p-4 md:p-8 transition-colors duration-300">
 
-    <!-- Login Section (Initially visible if not authenticated) -->
     <div id="login-section" class="hidden min-h-screen flex items-center justify-center">
         <main class="w-full max-w-md mx-auto">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8 space-y-6">
+            <div class="bg-[#F8F9FA] dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-8 space-y-6">
                 <div class="text-center">
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard Login</h1>
+                    <h1 class="text-2xl font-bold text-[#212121] dark:text-[#E0E0E0]">Dashboard Login</h1>
                     <p class="text-gray-600 dark:text-gray-400 mt-2">Enter the password to access your dashboard.</p>
                 </div>
                 <form id="login-form">
                     <div>
-                        <label for="password-input" class="sr-only">Password</label>
-                        <input type="password" id="password-input" name="password" required placeholder="Enter password" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                        <label for="login-password-input" class="sr-only">Password</label>
+                        <input type="password" id="login-password-input" name="password" required placeholder="Enter password" class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg focus:ring-2 focus:ring-[#2196F3] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
                     </div>
                     <div class="flex items-center">
-                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Remember me for 30 days</label>
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-[#2196F3] focus:ring-[#2196F3] border-gray-300 rounded">
+                        <label for="remember-me" class="ml-2 block text-sm text-[#212121] dark:text-[#E0E0E0]">Remember me for 30 days</label>
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Login</button>
+                    <button type="submit" class="w-full bg-[#2196F3] text-white font-semibold py-2 px-4 rounded-lg hover:bg-[#1e88e5] transition">Login</button>
                 </form>
                 <div id="login-error-message" class="text-sm text-red-500 text-center"></div>
             </div>
         </main>
     </div>
 
-    <!-- Main Dashboard Section (Initially hidden) -->
     <main id="dashboard-section" class="w-full max-w-6xl mx-auto space-y-8 hidden">
-        <!-- Header -->
         <header class="flex justify-between items-center">
             <div class="text-center flex-grow">
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-gray-100">RapidLink</h1>
+                <h1 class="text-4xl md:text-5xl font-bold text-[#212121] dark:text-[#E0E0E0]">RapidLink</h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-2">Your Personal URL Shortener</p>
             </div>
             <div class="flex items-center space-x-4">
-                <button id="theme-toggle" class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300">
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                     <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 5.05A1 1 0 016.465 3.636l.707.707a1 1 0 01-1.414 1.414l-.707-.707zm-.464 9.9a1 1 0 00-1.414-1.414l-.707.707a1 1 0 101.414 1.414l.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
                 </button>
             </div>
         </header>
 
-        <!-- Collapsible Domain Management Section -->
         <div>
-            <button id="toggle-domains-btn" class="w-full text-left font-semibold text-blue-600 dark:text-blue-400 p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800">
+            <button id="toggle-domains-btn" class="w-full text-left font-semibold text-[#2196F3] dark:text-[#64B5F6] p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                 Manage Domains &#9662;
             </button>
             <div id="domain-management-section" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="card rounded-2xl shadow-lg p-6">
-                    <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Add Domain</h2>
+                <div class="bg-[#F8F9FA] dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-[#212121] dark:text-[#E0E0E0] mb-4">Add Domain</h2>
                     <form id="domain-form" class="space-y-4">
-                        <input type="text" id="hostname" name="hostname" placeholder="e.g., link.mywebsite.com" required class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
-                        <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Add Domain</button>
+                        <input type="text" id="hostname" name="hostname" placeholder="e.g., link.mywebsite.com" required class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg focus:ring-2 focus:ring-[#2196F3] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
+                        <button type="submit" class="w-full bg-[#2196F3] text-white font-semibold py-2 px-4 rounded-lg hover:bg-[#1e88e5] transition">Add Domain</button>
                     </form>
                     <div id="domain-message" class="mt-4 text-sm"></div>
                 </div>
-                <div class="card rounded-2xl shadow-lg p-6">
-                    <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Available Domains</h2>
+                <div class="bg-[#F8F9FA] dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-[#212121] dark:text-[#E0E0E0] mb-4">Available Domains</h2>
                     <div id="domains-list" class="space-y-2"></div>
                     <div id="domains-loading" class="text-center py-4 text-gray-500 dark:text-gray-400">Loading...</div>
                 </div>
             </div>
         </div>
-        
-        <!-- Create Link & Active Links -->
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Create Link -->
-            <div class="lg:col-span-1 card rounded-2xl shadow-lg p-6">
-                 <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Create Short Link</h2>
+            <div class="lg:col-span-1 bg-[#F8F9FA] dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6">
+                 <h2 class="text-2xl font-semibold text-[#212121] dark:text-[#E0E0E0] mb-4">Create Short Link</h2>
                 <form id="shorten-form" class="space-y-4">
                     <div>
                         <label for="domain-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Domain</label>
-                        <select id="domain-select" name="hostname" required class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200"></select>
+                        <select id="domain-select" name="hostname" required class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg focus:ring-2 focus:ring-[#2196F3] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]"></select>
                     </div>
                     <div>
                         <label for="long-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Destination URL</label>
-                        <input type="url" id="long-url" name="url" placeholder="https://your-very-long-url.com" required class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                        <input type="url" id="long-url" name="url" placeholder="https://your-very-long-url.com" required class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg focus:ring-2 focus:ring-[#2196F3] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
                     </div>
                     <div>
                         <label for="custom-slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Custom Slug (Optional)</label>
-                        <input type="text" id="custom-slug" name="slug" placeholder="e.g., my-awesome-link" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                        <input type="text" id="custom-slug" name="slug" placeholder="e.g., my-awesome-link" class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg focus:ring-2 focus:ring-[#2196F3] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
                     </div>
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password (Optional)</label>
-                        <input type="password" id="password" name="password" placeholder="Protect this link" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                        <input type="password" id="password" name="password" placeholder="Protect this link" class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg focus:ring-2 focus:ring-[#2196F3] bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
                     </div>
-                    <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition">Generate Short URL</button>
+                    <button type="submit" class="w-full bg-[#4CAF50] text-white font-semibold py-2 px-4 rounded-lg hover:bg-[#45a049] transition">Generate Short URL</button>
                 </form>
                 <div id="result" class="mt-6"></div>
                 <div id="error-message" class="mt-4 text-sm text-red-600"></div>
             </div>
-            <!-- Active Links -->
-            <div class="lg:col-span-2 card rounded-2xl shadow-lg p-6">
-                <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Active Links</h2>
+            <div class="lg:col-span-2 bg-[#F8F9FA] dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-[#212121] dark:text-[#E0E0E0] mb-4">Active Links</h2>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-                        <thead class="bg-gray-50 dark:bg-slate-800">
+                    <table class="min-w-full divide-y divide-[#E0E0E0] dark:divide-[#424242]">
+                        <thead class="bg-gray-50 dark:bg-[#121212]">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Short Link</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Destination</th>
@@ -125,7 +135,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="links-table-body" class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-700"></tbody>
+                        <tbody id="links-table-body" class="bg-white dark:bg-[#1E1E1E] divide-y divide-[#E0E0E0] dark:divide-[#424242]"></tbody>
                     </table>
                 </div>
                 <div id="links-loading" class="text-center py-4 text-gray-500 dark:text-gray-400">Loading links...</div>
@@ -133,27 +143,26 @@
         </div>
     </main>
 
-    <!-- Edit Link Modal -->
     <div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
-        <div class="card rounded-2xl shadow-lg p-6 w-full max-w-lg">
-            <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Edit Link</h2>
+        <div class="bg-[#F8F9FA] dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6 w-full max-w-lg">
+            <h2 class="text-2xl font-semibold text-[#212121] dark:text-[#E0E0E0] mb-4">Edit Link</h2>
             <form id="edit-form" class="space-y-4">
                 <input type="hidden" id="edit-original-slug" name="originalSlug">
                 <div>
                     <label for="edit-destination-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Destination URL</label>
-                    <input type="url" id="edit-destination-url" name="destinationUrl" required class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                    <input type="url" id="edit-destination-url" name="destinationUrl" required class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
                 </div>
                 <div>
                     <label for="edit-slug" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Slug</label>
-                    <input type="text" id="edit-slug" name="newSlug" required class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                    <input type="text" id="edit-slug" name="newSlug" required class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
                 </div>
                 <div>
                     <label for="edit-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
-                    <input type="password" id="edit-password" name="password" placeholder="Leave blank to keep current password" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                    <input type="password" id="edit-password" name="password" placeholder="Leave blank to keep current password" class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
                 </div>
                 <div class="flex justify-end space-x-4">
-                    <button type="button" id="cancel-edit-btn" class="bg-gray-200 dark:bg-slate-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg">Cancel</button>
-                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">Save Changes</button>
+                    <button type="button" id="cancel-edit-btn" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg">Cancel</button>
+                    <button type="submit" class="bg-[#2196F3] text-white font-semibold py-2 px-4 rounded-lg">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -166,18 +175,18 @@
 
         // --- Auth Check & Page Initialization ---
         document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    // If this succeeds, the cookie is present & valid
-    const resp = await fetch('/api/links');
-    if (resp.ok) {
-      showDashboard();
-    } else {
-      showLogin();
-    }
-  } catch {
-    showLogin();
-  }
-});
+          try {
+            // If this succeeds, the cookie is present & valid
+            const resp = await fetch('/api/links');
+            if (resp.ok) {
+              showDashboard();
+            } else {
+              showLogin();
+            }
+          } catch {
+            showLogin();
+          }
+        });
 
         function showLogin() {
             dashboardSection.classList.add('hidden');
@@ -197,7 +206,7 @@
         // --- Login Form Logic ---
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const password = document.getElementById('password-input').value;
+            const password = document.getElementById('login-password-input').value;
             const rememberMe = document.getElementById('remember-me').checked;
             const errorMessage = document.getElementById('login-error-message');
             errorMessage.textContent = '';
@@ -228,10 +237,10 @@
             darkIcon.classList.remove('hidden');
         }
         themeToggleBtn.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.toggle('dark');
             darkIcon.classList.toggle('hidden');
             lightIcon.classList.toggle('hidden');
-            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
         document.getElementById('toggle-domains-btn').addEventListener('click', (e) => {
             const section = document.getElementById('domain-management-section');
@@ -276,8 +285,8 @@
             } else {
                 domains.forEach(domain => {
                     const div = document.createElement('div');
-                    div.className = 'flex items-center justify-between bg-gray-50 dark:bg-slate-700 p-2 rounded-lg';
-                    div.innerHTML = `<span class="text-sm font-medium text-gray-800 dark:text-gray-200">${domain.hostname}</span><button data-hostname="${domain.hostname}" class="delete-domain-btn text-red-500 hover:text-red-700 text-xs font-semibold">DELETE</button>`;
+                    div.className = 'flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-2 rounded-lg';
+                    div.innerHTML = `<span class="text-sm font-medium text-[#212121] dark:text-[#E0E0E0]">${domain.hostname}</span><button data-hostname="${domain.hostname}" class="delete-domain-btn text-red-500 hover:text-red-700 text-xs font-semibold">DELETE</button>`;
                     domainsList.appendChild(div);
                     const option = document.createElement('option');
                     option.value = domain.hostname;
@@ -347,11 +356,11 @@
                     const row = document.createElement('tr');
                     const shortUrl = `https://${link.hostname}/${link.slug}`;
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200"><a href="${shortUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline font-mono">${link.hostname}/${link.slug}</a></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-[#212121] dark:text-[#E0E0E0]"><a href="${shortUrl}" target="_blank" class="text-[#2196F3] dark:text-[#64B5F6] hover:underline font-mono">${link.hostname}/${link.slug}</a></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 truncate" style="max-width: 200px;" title="${link.url}">${link.url}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 font-medium"><a href="/details.html?slug=${link.slug}" class="text-blue-600 dark:text-blue-400 hover:underline">${link.click_count || 0}</a></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-[#212121] dark:text-[#E0E0E0] font-medium"><a href="/details.html?slug=${link.slug}" class="text-[#2196F3] dark:text-[#64B5F6] hover:underline">${link.click_count || 0}</a></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm space-x-4">
-                            <button data-link='${JSON.stringify(link)}' class="edit-link-btn text-blue-600 dark:text-blue-400 hover:underline">Edit</button>
+                            <button data-link='${JSON.stringify(link)}' class="edit-link-btn text-[#2196F3] dark:text-[#64B5F6] hover:underline">Edit</button>
                             <button data-slug="${link.slug}" class="delete-link-btn text-red-500 hover:underline">Delete</button>
                             <button data-url="${shortUrl}" class="copy-link-btn text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white">Copy</button>
                         </td>
@@ -414,7 +423,6 @@
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = Object.fromEntries(new FormData(editForm).entries());
-            // Only send password if it's not empty, otherwise it will be cleared
             if (payload.password === '') {
                 // explicitly send empty string to clear it
             } else if (!payload.password) {
