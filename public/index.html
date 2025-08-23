@@ -16,25 +16,6 @@
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Custom Properties for Fresh & Energetic Theme */
-        :root {
-            --bg-light: #FFFFFF;
-            --text-light: #212121;
-            --card-light: #F8F9FA;
-            --primary: #4CAF50;
-            --primary-hover: #45a049;
-            --accent: #FFC107;
-            --info: #2196F3;
-            --info-hover: #1e88e5;
-            --border-light: #E0E0E0;
-
-            --bg-dark: #121212;
-            --text-dark: #E0E0E0;
-            --card-dark: #1E1E1E;
-            --info-dark: #64B5F6;
-            --info-dark-hover: #42a5f5;
-            --border-dark: #424242;
-        }
         .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); }
     </style>
 </head>
@@ -125,6 +106,28 @@
             </div>
             <div class="lg:col-span-2 bg-[#F8F9FA] dark:bg-[#1E1E1E] rounded-2xl shadow-lg p-6">
                 <h2 class="text-2xl font-semibold text-[#212121] dark:text-[#E0E0E0] mb-4">Active Links</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <input type="text" id="search-input" placeholder="Search slug or destination..." class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
+
+                    <select id="domain-filter" class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
+                        <option value="all">All Domains</option>
+                    </select>
+
+                    <select id="password-filter" class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
+                        <option value="all">All Links</option>
+                        <option value="protected">Password Protected</option>
+                        <option value="not-protected">Not Protected</option>
+                    </select>
+
+                    <select id="sort-by" class="w-full px-4 py-2 border border-[#E0E0E0] dark:border-[#424242] rounded-lg bg-white dark:bg-[#121212] text-[#212121] dark:text-[#E0E0E0]">
+                        <option value="created_at_desc">Sort by: Newest</option>
+                        <option value="created_at_asc">Sort by: Oldest</option>
+                        <option value="clicks_desc">Sort by: Clicks (High)</option>
+                        <option value="clicks_asc">Sort by: Clicks (Low)</option>
+                    </select>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-[#E0E0E0] dark:divide-[#424242]">
                         <thead class="bg-gray-50 dark:bg-[#121212]">
@@ -173,10 +176,12 @@
         const loginSection = document.getElementById('login-section');
         const dashboardSection = document.getElementById('dashboard-section');
 
+        // --- State for Links ---
+        let allLinks = [];
+
         // --- Auth Check & Page Initialization ---
         document.addEventListener('DOMContentLoaded', async () => {
           try {
-            // If this succeeds, the cookie is present & valid
             const resp = await fetch('/api/links');
             if (resp.ok) {
               showDashboard();
@@ -198,7 +203,6 @@
             loginSection.classList.add('hidden');
             loginSection.classList.remove('flex');
             dashboardSection.classList.remove('hidden');
-            // Initialize dashboard data now that we know we're logged in
             fetchDomains();
             fetchLinks();
         }
@@ -217,7 +221,7 @@
                     body: JSON.stringify({ password, rememberMe })
                 });
                 if (response.ok) {
-                    showDashboard(); // On success, show the dashboard
+                    showDashboard();
                 } else {
                     const result = await response.json();
                     throw new Error(result.error || 'Login failed.');
@@ -253,7 +257,7 @@
             const response = await fetch(url, options);
             if (response.status === 401) {
                 document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                showLogin(); // Show login screen instead of redirecting
+                showLogin();
                 throw new Error('Session expired.');
             }
             return response;
@@ -265,7 +269,8 @@
         const domainsList = document.getElementById('domains-list');
         const domainsLoading = document.getElementById('domains-loading');
         const domainSelect = document.getElementById('domain-select');
-        
+        const domainFilterSelect = document.getElementById('domain-filter');
+
         async function fetchDomains() {
             try {
                 const response = await fetchApi('/api/domains');
@@ -279,19 +284,29 @@
         function renderDomains(domains) {
             domainsList.innerHTML = '';
             domainSelect.innerHTML = '';
+            domainFilterSelect.innerHTML = '<option value="all">All Domains</option>'; // Reset filter
             if (domains.length === 0) {
                 domainsList.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">No domains added yet.</p>`;
                 domainSelect.innerHTML = `<option disabled selected>Please add a domain first</option>`;
             } else {
                 domains.forEach(domain => {
+                    // Populate main domain list
                     const div = document.createElement('div');
                     div.className = 'flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-2 rounded-lg';
                     div.innerHTML = `<span class="text-sm font-medium text-[#212121] dark:text-[#E0E0E0]">${domain.hostname}</span><button data-hostname="${domain.hostname}" class="delete-domain-btn text-red-500 hover:text-red-700 text-xs font-semibold">DELETE</button>`;
                     domainsList.appendChild(div);
-                    const option = document.createElement('option');
-                    option.value = domain.hostname;
-                    option.textContent = domain.hostname;
-                    domainSelect.appendChild(option);
+                    
+                    // Populate create link dropdown
+                    const createOption = document.createElement('option');
+                    createOption.value = domain.hostname;
+                    createOption.textContent = domain.hostname;
+                    domainSelect.appendChild(createOption);
+
+                    // Populate filter dropdown
+                    const filterOption = document.createElement('option');
+                    filterOption.value = domain.hostname;
+                    filterOption.textContent = domain.hostname;
+                    domainFilterSelect.appendChild(filterOption);
                 });
             }
         }
@@ -330,39 +345,75 @@
         // --- Link Management ---
         const shortenForm = document.getElementById('shorten-form');
         const resultDiv = document.getElementById('result');
-        const errorMessage = document.getElementById('error-message');
+        const errorMessageDiv = document.getElementById('error-message');
         const linksTableBody = document.getElementById('links-table-body');
         const linksLoading = document.getElementById('links-loading');
         const editModal = document.getElementById('edit-modal');
         const editForm = document.getElementById('edit-form');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const searchInput = document.getElementById('search-input');
+        const passwordFilter = document.getElementById('password-filter');
+        const sortBy = document.getElementById('sort-by');
 
         async function fetchLinks() {
             try {
                 const response = await fetchApi('/api/links');
                 if (!response.ok) throw new Error('Failed to fetch links.');
-                const links = await response.json();
-                renderLinks(links);
+                allLinks = await response.json();
+                renderLinks();
                 linksLoading.style.display = 'none';
             } catch (error) { linksLoading.textContent = `Error: ${error.message}`; }
         }
 
-        function renderLinks(links) {
+        function renderLinks() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const domainFilterValue = domainFilterSelect.value;
+            const passwordFilterValue = passwordFilter.value;
+            const sortValue = sortBy.value;
+
+            let filteredLinks = allLinks.filter(link => {
+                const matchesSearch = link.slug.toLowerCase().includes(searchTerm) || link.url.toLowerCase().includes(searchTerm);
+                const matchesDomain = domainFilterValue === 'all' || link.hostname === domainFilterValue;
+                const isProtected = !!link.password;
+                const matchesPassword = 
+                    (passwordFilterValue === 'all') ||
+                    (passwordFilterValue === 'protected' && isProtected) ||
+                    (passwordFilterValue === 'not-protected' && !isProtected);
+                return matchesSearch && matchesDomain && matchesPassword;
+            });
+
+            filteredLinks.sort((a, b) => {
+                switch (sortValue) {
+                    case 'created_at_asc': return new Date(a.created_at) - new Date(b.created_at);
+                    case 'clicks_desc': return (b.click_count || 0) - (a.click_count || 0);
+                    case 'clicks_asc': return (a.click_count || 0) - (b.click_count || 0);
+                    case 'created_at_desc': default: return new Date(b.created_at) - new Date(a.created_at);
+                }
+            });
+
             linksTableBody.innerHTML = '';
-            if (links.length === 0) {
-                linksTableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">No links created yet.</td></tr>`;
+            if (filteredLinks.length === 0) {
+                linksTableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">No links match your criteria.</td></tr>`;
             } else {
-                links.forEach(link => {
+                filteredLinks.forEach(link => {
                     const row = document.createElement('tr');
                     const shortUrl = `https://${link.hostname}/${link.slug}`;
+                    const isProtected = !!link.password;
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-[#212121] dark:text-[#E0E0E0]"><a href="${shortUrl}" target="_blank" class="text-[#2196F3] dark:text-[#64B5F6] hover:underline font-mono">${link.hostname}/${link.slug}</a></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-[#212121] dark:text-[#E0E0E0]">
+                            <div class="flex items-center space-x-2">
+                                <a href="${shortUrl}" target="_blank" class="text-[#2196F3] dark:text-[#64B5F6] hover:underline font-mono">${link.hostname}/${link.slug}</a>
+                                ${isProtected ? `<svg title="Password protected" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>` : ''}
+                                <button data-url="${shortUrl}" class="copy-link-btn text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white" title="Copy short link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                </button>
+                            </div>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 truncate" style="max-width: 200px;" title="${link.url}">${link.url}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-[#212121] dark:text-[#E0E0E0] font-medium"><a href="/details.html?slug=${link.slug}" class="text-[#2196F3] dark:text-[#64B5F6] hover:underline">${link.click_count || 0}</a></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm space-x-4">
                             <button data-link='${JSON.stringify(link)}' class="edit-link-btn text-[#2196F3] dark:text-[#64B5F6] hover:underline">Edit</button>
                             <button data-slug="${link.slug}" class="delete-link-btn text-red-500 hover:underline">Delete</button>
-                            <button data-url="${shortUrl}" class="copy-link-btn text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white">Copy</button>
                         </td>
                     `;
                     linksTableBody.appendChild(row);
@@ -370,12 +421,18 @@
             }
         }
         
+        // Event Listeners for controls
+        searchInput.addEventListener('input', renderLinks);
+        domainFilterSelect.addEventListener('change', renderLinks);
+        passwordFilter.addEventListener('change', renderLinks);
+        sortBy.addEventListener('change', renderLinks);
+        
         shortenForm.addEventListener('submit', async (e) => {
              e.preventDefault();
             const payload = Object.fromEntries(new FormData(shortenForm).entries());
             if (!payload.password) delete payload.password;
             resultDiv.innerHTML = '';
-            errorMessage.textContent = '';
+            errorMessageDiv.textContent = '';
             try {
                 const response = await fetchApi('/api/shorten', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
@@ -383,15 +440,17 @@
                 resultDiv.innerHTML = `<div class="p-4 rounded-lg bg-green-100 dark:bg-green-900 border border-green-200 dark:border-green-800"><h3 class="font-semibold text-green-800 dark:text-green-200">Success!</h3><a href="${result.shortUrl}" target="_blank" class="font-mono text-green-600 dark:text-green-400 break-all">${result.shortUrl}</a></div>`;
                 shortenForm.reset();
                 await fetchLinks();
-            } catch (error) { errorMessage.textContent = `Error: ${error.message}`; }
+            } catch (error) { errorMessageDiv.textContent = `Error: ${error.message}`; }
         });
         
         linksTableBody.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('copy-link-btn')) {
-                const urlToCopy = e.target.dataset.url;
+            const copyBtn = e.target.closest('.copy-link-btn');
+            if (copyBtn) {
+                const urlToCopy = copyBtn.dataset.url;
                 navigator.clipboard.writeText(urlToCopy).then(() => {
-                    e.target.textContent = 'Copied!';
-                    setTimeout(() => { e.target.textContent = 'Copy'; }, 2000);
+                    const originalIcon = copyBtn.innerHTML;
+                    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+                    setTimeout(() => { copyBtn.innerHTML = originalIcon; }, 2000);
                 }).catch(err => console.error('Failed to copy', err));
             }
             if (e.target.classList.contains('delete-link-btn')) {
@@ -426,7 +485,7 @@
             if (payload.password === '') {
                 // explicitly send empty string to clear it
             } else if (!payload.password) {
-                delete payload.password; // if field is empty and not touched, don't send it
+                delete payload.password;
             }
             try {
                 const response = await fetchApi('/api/links', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });

@@ -114,7 +114,7 @@ export async function handleGetLinkDetails(req, res, db) {
     return res.status(200).json(result.rows);
 }
 export async function handleGetLinks(req, res, db) {
-    const result = await db.execute("SELECT slug, url, created_at, click_count, hostname FROM links ORDER BY created_at DESC");
+    const result = await db.execute("SELECT slug, url, created_at, click_count, hostname, password FROM links ORDER BY created_at DESC");
     return res.status(200).json(result.rows);
 }
 export async function handleGetDomains(req, res, db) {
