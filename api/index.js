@@ -59,7 +59,7 @@ export default async function handler(req, res) {
         return await handleVerifyPassword(req, res, db, bodyData);
     }
 
-    // **NEW** GET PASTE CONTENT ROUTE (Public)
+    // GET PASTE CONTENT ROUTE (Public)
     if (path === "/api/get-paste" && method === "GET") {
         if (!db) {
             return res.status(500).json({ error: "Database connection failed." });
@@ -69,17 +69,37 @@ export default async function handler(req, res) {
 
 
     // --- AUTHENTICATION CHECK FOR ALL OTHER API ROUTES ---
+    let isAuthenticated = false;
     try {
-      if (!DASHBOARD_PASSWORD) {
-          console.error("[FATAL][API] DASHBOARD_PASSWORD is not available for auth check.");
-          return res.status(500).json({ error: "Server configuration error." });
-      }
-      const cookies = parse(req.headers.cookie || '');
-      const token = cookies.auth_token;
-      if (!token) throw new Error('No auth token');
-      jwt.verify(token, DASHBOARD_PASSWORD);
+        if (!DASHBOARD_PASSWORD) {
+            throw new Error("Server configuration error: DASHBOARD_PASSWORD is not set.");
+        }
+
+        // METHOD 1: Check for Authorization header (for plugins/external tools)
+        const authHeader = req.headers['authorization'];
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7, authHeader.length);
+            if (token === DASHBOARD_PASSWORD) {
+                isAuthenticated = true;
+            }
+        }
+
+        // METHOD 2: Check for auth cookie (for the web dashboard)
+        if (!isAuthenticated) {
+            const cookies = parse(req.headers.cookie || '');
+            const token = cookies.auth_token;
+            if (token) {
+                jwt.verify(token, DASHBOARD_PASSWORD);
+                isAuthenticated = true;
+            }
+        }
+
+        if (!isAuthenticated) {
+            throw new Error('Authentication required.');
+        }
+
     } catch (error) {
-      return res.status(401).json({ error: 'Authentication required. Please log in again.' });
+        return res.status(401).json({ error: 'Authentication required. Please log in again or provide a valid token.' });
     }
 
     // If authentication passes, connect to DB and proceed to protected routes
