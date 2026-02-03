@@ -5,12 +5,38 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/p/:slug",
-      "destination": "/paste.html"
+      "source": "/assets/:path*",
+      "destination": "/assets/:path*"
     },
     {
-      "source": "/:slug((?!api/|favicon.ico|p/).*)",
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/details/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/password",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/p/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:slug((?!api/|assets/|favicon.ico|vite.svg).*)",
       "destination": "/api/redirect.js?slug=:slug"
     }
-  ]
+  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }

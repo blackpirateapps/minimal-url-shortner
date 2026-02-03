@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0a0a0f;
+  min-height: 100vh;
+}
+
+/* Glassmorphism base styles */
+@layer components {
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  .glass-subtle {
+    @apply bg-white/5 backdrop-blur-sm border border-white/10;
+  }
+
+  .glass-input {
+    @apply bg-white/5 backdrop-blur-sm border border-white/20 
+           focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20
+           transition-all duration-200;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 
+           bg-clip-text text-transparent;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-cyan-500 to-purple-500 
+           hover:from-cyan-400 hover:to-purple-400
+           text-white font-semibold py-2 px-4 rounded-lg
+           transition-all duration-200 shadow-lg
+           hover:shadow-cyan-500/25;
+  }
+
+  .btn-secondary {
+    @apply glass hover:bg-white/20 text-white font-medium 
+           py-2 px-4 rounded-lg transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply bg-red-500/20 hover:bg-red-500/30 border border-red-500/30
+           text-red-400 font-medium py-2 px-4 rounded-lg
+           transition-all duration-200;
+  }
+}
+
+/* Animated background gradient */
+.bg-animated {
+  background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
