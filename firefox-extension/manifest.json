@@ -1,0 +1,43 @@
+{
+    "manifest_version": 2,
+    "name": "RapidLink URL Shortener",
+    "version": "1.0.0",
+    "description": "Quickly shorten URLs using your self-hosted RapidLink instance",
+    "icons": {
+        "48": "icons/icon-48.svg",
+        "96": "icons/icon-96.svg"
+    },
+    "permissions": [
+        "activeTab",
+        "storage",
+        "clipboardWrite",
+        "contextMenus"
+    ],
+    "browser_action": {
+        "default_icon": {
+            "48": "icons/icon-48.svg",
+            "96": "icons/icon-96.svg"
+        },
+        "default_title": "Shorten URL",
+        "default_popup": "popup/popup.html"
+    },
+    "options_ui": {
+        "page": "options/options.html",
+        "open_in_tab": true
+    },
+    "background": {
+        "scripts": [
+            "background.js"
+        ],
+        "persistent": false
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "rapidlink@shortener.local",
+            "strict_min_version": "109.0"
+        },
+        "gecko_android": {
+            "strict_min_version": "109.0"
+        }
+    }
+}
