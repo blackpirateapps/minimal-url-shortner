@@ -39,8 +39,8 @@ export default function PasteView() {
         <div className="min-h-screen bg-animated flex items-center justify-center p-4 relative overflow-hidden">
             {/* Background decorations */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 -left-32 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-                <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl" />
+                <div className="absolute top-1/4 -left-32 w-96 h-96 bg-ocean-500/15 rounded-full blur-3xl" />
+                <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-ocean-400/15 rounded-full blur-3xl" />
             </div>
 
             <motion.div
@@ -50,8 +50,8 @@ export default function PasteView() {
             >
                 <GlassCard>
                     <div className="flex items-center gap-2 mb-6">
-                        <div className="p-2 rounded-lg bg-gradient-to-r from-pink-500/20 to-orange-500/20">
-                            <FileText className="w-5 h-5 text-pink-400" />
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-ocean-500/20 to-ocean-600/20">
+                            <FileText className="w-5 h-5 text-ocean-400" />
                         </div>
                         <h1 className="text-xl font-semibold text-white">Paste View</h1>
                         <code className="text-white/40 text-sm font-mono ml-auto">{slug}</code>
@@ -67,7 +67,7 @@ export default function PasteView() {
                 prose-headings:text-white prose-headings:font-semibold
                 prose-p:text-white/80 prose-p:leading-relaxed
                 prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline
-                prose-code:text-pink-400 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono
+                prose-code:text-ocean-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono
                 prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg
                 prose-blockquote:border-l-cyan-400 prose-blockquote:text-white/70
                 prose-strong:text-white prose-strong:font-semibold

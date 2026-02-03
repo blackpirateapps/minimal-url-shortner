@@ -73,8 +73,8 @@ export default function DomainManager({ domains, onUpdate }: DomainManagerProps)
             {/* Add Domain */}
             <GlassCard>
                 <div className="flex items-center gap-2 mb-4">
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20">
-                        <Plus className="w-5 h-5 text-purple-400" />
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-ocean-500/20 to-ocean-600/20">
+                        <Plus className="w-5 h-5 text-ocean-400" />
                     </div>
                     <h3 className="text-lg font-semibold text-white">Add Domain</h3>
                 </div>

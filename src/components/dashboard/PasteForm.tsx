@@ -86,8 +86,8 @@ export default function PasteForm({ domains }: PasteFormProps) {
     return (
         <GlassCard className="max-w-4xl">
             <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-pink-500/20 to-orange-500/20">
-                    <Clipboard className="w-5 h-5 text-pink-400" />
+                <div className="p-2 rounded-lg bg-gradient-to-r from-ocean-500/20 to-ocean-600/20">
+                    <Clipboard className="w-5 h-5 text-ocean-400" />
                 </div>
                 <h2 className="text-xl font-semibold text-white">Create a Paste</h2>
             </div>

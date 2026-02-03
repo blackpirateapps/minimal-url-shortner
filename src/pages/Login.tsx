@@ -37,8 +37,8 @@ export default function Login() {
         <div className="min-h-screen bg-animated flex items-center justify-center p-4 relative overflow-hidden">
             {/* Background decorations */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 -left-32 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-float" />
-                <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-cyan-500/30 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }} />
+                <div className="absolute top-1/4 -left-32 w-96 h-96 bg-ocean-500/20 rounded-full blur-3xl animate-float" />
+                <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-ocean-400/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }} />
             </div>
 
             <motion.div
@@ -50,7 +50,7 @@ export default function Login() {
                 <GlassCard className="space-y-6">
                     {/* Logo */}
                     <div className="text-center space-y-2">
-                        <div className="inline-flex p-3 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 mb-2">
+                        <div className="inline-flex p-3 rounded-xl bg-gradient-to-r from-ocean-500 to-ocean-600 mb-2">
                             <Link2 className="w-8 h-8 text-white" />
                         </div>
                         <h1 className="text-2xl font-bold text-white">Welcome Back</h1>

@@ -72,8 +72,8 @@ export default function Analytics() {
                 </GlassCard>
 
                 <GlassCard className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20">
-                        <Globe className="w-6 h-6 text-purple-400" />
+                    <div className="p-3 rounded-xl bg-gradient-to-r from-ocean-500/20 to-ocean-600/20">
+                        <Globe className="w-6 h-6 text-ocean-400" />
                     </div>
                     <div>
                         <p className="text-sm text-white/60">Unique IPs</p>

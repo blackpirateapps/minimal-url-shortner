@@ -16,9 +16,9 @@ export default function Layout() {
         <div className="min-h-screen bg-animated relative overflow-hidden">
             {/* Decorative background elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 -left-32 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-                <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-3xl" />
+                <div className="absolute top-1/4 -left-32 w-96 h-96 bg-ocean-500/15 rounded-full blur-3xl" />
+                <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-ocean-400/15 rounded-full blur-3xl" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-400/10 rounded-full blur-3xl" />
             </div>
 
             {/* Navbar */}
@@ -27,7 +27,7 @@ export default function Layout() {
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <Link to="/dashboard" className="flex items-center gap-2">
-                            <div className="p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500">
+                            <div className="p-2 rounded-lg bg-gradient-to-r from-ocean-500 to-ocean-600">
                                 <Link2 className="w-5 h-5 text-white" />
                             </div>
                             <span className="text-xl font-bold gradient-text">RapidLink</span>

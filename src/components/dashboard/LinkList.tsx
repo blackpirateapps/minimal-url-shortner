@@ -193,7 +193,7 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
                                             <td className="py-3 px-2">
                                                 <Link
                                                     to={`/details/${link.slug}`}
-                                                    className="text-purple-400 hover:text-purple-300 font-medium"
+                                                    className="text-ocean-400 hover:text-ocean-300 font-medium"
                                                 >
                                                     {link.click_count || 0}
                                                 </Link>
