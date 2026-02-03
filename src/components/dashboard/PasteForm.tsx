@@ -9,9 +9,10 @@ import Input from '@/components/ui/Input'
 
 interface PasteFormProps {
     domains: Domain[]
+    onSuccess?: () => void
 }
 
-export default function PasteForm({ domains }: PasteFormProps) {
+export default function PasteForm({ domains, onSuccess }: PasteFormProps) {
     const [form, setForm] = useState({
         content: '',
         hostname: domains[0]?.hostname || '',
@@ -53,6 +54,7 @@ export default function PasteForm({ domains }: PasteFormProps) {
             if (res.ok) {
                 setResult(data.pasteUrl)
                 setForm((f) => ({ ...f, content: '', password: '' }))
+                onSuccess?.()
             } else {
                 setError(data.error || 'Failed to create paste')
             }
@@ -98,9 +100,9 @@ export default function PasteForm({ domains }: PasteFormProps) {
                     <textarea
                         value={form.content}
                         onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                        rows={12}
+                        rows={8}
                         required
-                        className="w-full px-4 py-3 rounded-lg glass-input text-white placeholder:text-white/40 outline-none font-mono text-sm resize-y"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg glass-input text-white placeholder:text-white/40 outline-none font-mono text-sm resize-y"
                         placeholder="# Your markdown content here..."
                     />
                 </div>

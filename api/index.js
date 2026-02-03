@@ -10,7 +10,7 @@ import {
   handleDeleteLink, handleUpdateLink
 } from './_handlers.js';
 // Import BOTH paste handlers
-import { handleCreatePaste, handleGetPaste } from './_paste_handlers.js';
+import { handleCreatePaste, handleGetPaste, handleGetPastes, handleDeletePaste } from './_paste_handlers.js';
 
 // Load the password from environment variables at the top level
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
@@ -65,53 +65,53 @@ export default async function handler(req, res) {
 
     // VERIFY LINK PASSWORD ROUTE
     if (path === "/api/verify-password" && method === "POST") {
-        if (!db) {
-            return res.status(500).json({ error: "Database connection failed." });
-        }
-        return await handleVerifyPassword(req, res, db, bodyData);
+      if (!db) {
+        return res.status(500).json({ error: "Database connection failed." });
+      }
+      return await handleVerifyPassword(req, res, db, bodyData);
     }
 
     // GET PASTE CONTENT ROUTE (Public)
     if (path === "/api/get-paste" && method === "GET") {
-        if (!db) {
-            return res.status(500).json({ error: "Database connection failed." });
-        }
-        return await handleGetPaste(req, res, db);
+      if (!db) {
+        return res.status(500).json({ error: "Database connection failed." });
+      }
+      return await handleGetPaste(req, res, db);
     }
 
 
     // --- AUTHENTICATION CHECK FOR ALL OTHER API ROUTES ---
     let isAuthenticated = false;
     try {
-        if (!DASHBOARD_PASSWORD) {
-            throw new Error("Server configuration error: DASHBOARD_PASSWORD is not set.");
-        }
+      if (!DASHBOARD_PASSWORD) {
+        throw new Error("Server configuration error: DASHBOARD_PASSWORD is not set.");
+      }
 
-        // METHOD 1: Check for Authorization header (for plugins/external tools)
-        const authHeader = req.headers['authorization'];
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const token = authHeader.substring(7, authHeader.length);
-            if (token === DASHBOARD_PASSWORD) {
-                isAuthenticated = true;
-            }
+      // METHOD 1: Check for Authorization header (for plugins/external tools)
+      const authHeader = req.headers['authorization'];
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7, authHeader.length);
+        if (token === DASHBOARD_PASSWORD) {
+          isAuthenticated = true;
         }
+      }
 
-        // METHOD 2: Check for auth cookie (for the web dashboard)
-        if (!isAuthenticated) {
-            const cookies = parse(req.headers.cookie || '');
-            const token = cookies.auth_token;
-            if (token) {
-                jwt.verify(token, DASHBOARD_PASSWORD);
-                isAuthenticated = true;
-            }
+      // METHOD 2: Check for auth cookie (for the web dashboard)
+      if (!isAuthenticated) {
+        const cookies = parse(req.headers.cookie || '');
+        const token = cookies.auth_token;
+        if (token) {
+          jwt.verify(token, DASHBOARD_PASSWORD);
+          isAuthenticated = true;
         }
+      }
 
-        if (!isAuthenticated) {
-            throw new Error('Authentication required.');
-        }
+      if (!isAuthenticated) {
+        throw new Error('Authentication required.');
+      }
 
     } catch (error) {
-        return res.status(401).json({ error: 'Authentication required. Please log in again or provide a valid token.' });
+      return res.status(401).json({ error: 'Authentication required. Please log in again or provide a valid token.' });
     }
 
     // If authentication passes, connect to DB and proceed to protected routes
@@ -121,6 +121,8 @@ export default async function handler(req, res) {
 
     // --- PROTECTED API ROUTES ---
     if (path === "/api/create-paste" && method === "POST") return await handleCreatePaste(req, res, db, bodyData);
+    if (path === "/api/pastes" && method === "GET") return await handleGetPastes(req, res, db);
+    if (path === "/api/pastes" && method === "DELETE") return await handleDeletePaste(req, res, db, bodyData);
     if (path === "/api/link-details" && method === "GET") return await handleGetLinkDetails(req, res, db);
     if (path === "/api/domains" && method === "GET") return await handleGetDomains(req, res, db);
     if (path === "/api/domains" && method === "DELETE") return await handleDeleteDomain(req, res, db, bodyData);

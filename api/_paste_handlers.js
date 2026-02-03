@@ -30,10 +30,47 @@ export async function handleGetPaste(req, res, db) {
 
   // Handle password protection (future enhancement)
   if (paste.password) {
-      return res.status(403).json({ error: "This paste is password protected."})
+    return res.status(403).json({ error: "This paste is password protected." })
   }
 
   return res.status(200).json({ content: paste.content });
+}
+
+// --- Handler for LISTING all pastes ---
+export async function handleGetPastes(req, res, db) {
+  const result = await db.execute({
+    sql: `SELECT slug, hostname, password, expires_at, created_at 
+          FROM pastes 
+          ORDER BY created_at DESC`,
+    args: [],
+  });
+
+  const now = new Date();
+  const pastes = result.rows.map(paste => ({
+    slug: paste.slug,
+    hostname: paste.hostname,
+    hasPassword: !!paste.password,
+    expiresAt: paste.expires_at,
+    createdAt: paste.created_at,
+    isExpired: paste.expires_at ? new Date(paste.expires_at) < now : false,
+  }));
+
+  return res.status(200).json(pastes);
+}
+
+// --- Handler for DELETING a paste ---
+export async function handleDeletePaste(req, res, db, bodyData) {
+  const { slug } = bodyData;
+  if (!slug) {
+    return res.status(400).json({ error: "Paste slug is required." });
+  }
+
+  await db.execute({
+    sql: "DELETE FROM pastes WHERE slug = ?",
+    args: [slug],
+  });
+
+  return res.status(200).json({ message: "Paste deleted successfully." });
 }
 
 // --- Handler for CREATING a paste ---
@@ -60,11 +97,11 @@ export async function handleCreatePaste(req, res, db, bodyData) {
 
   let expiresAt = null;
   if (expires && expires !== 'never') {
-      const now = new Date();
-      if (expires === '1hour') now.setHours(now.getHours() + 1);
-      if (expires === '1day') now.setDate(now.getDate() + 1);
-      if (expires === '1week') now.setDate(now.getDate() + 7);
-      expiresAt = now.toISOString();
+    const now = new Date();
+    if (expires === '1hour') now.setHours(now.getHours() + 1);
+    if (expires === '1day') now.setDate(now.getDate() + 1);
+    if (expires === '1week') now.setDate(now.getDate() + 7);
+    expiresAt = now.toISOString();
   }
 
   await db.execute({
