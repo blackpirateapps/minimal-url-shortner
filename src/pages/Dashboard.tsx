@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Link2, Clipboard, ChevronDown, ChevronUp } from 'lucide-react'
-import GlassCard from '@/components/ui/GlassCard'
+import { Link2, Clipboard, ChevronDown, ChevronUp } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import LinkList from '@/components/dashboard/LinkList'
 import ShortenForm from '@/components/dashboard/ShortenForm'

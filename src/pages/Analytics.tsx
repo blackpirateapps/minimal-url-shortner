@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, BarChart3, Globe, Monitor, Link2 } from 'lucide-react'
+import { ArrowLeft, BarChart3, Globe, Link2 } from 'lucide-react'
 import GlassCard from '@/components/ui/GlassCard'
 
 interface Click {

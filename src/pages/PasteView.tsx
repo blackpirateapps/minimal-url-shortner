@@ -6,7 +6,6 @@ import GlassCard from '@/components/ui/GlassCard'
 
 export default function PasteView() {
     const { slug } = useParams<{ slug: string }>()
-    const [content, setContent] = useState('')
     const [html, setHtml] = useState('')
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
@@ -20,7 +19,6 @@ export default function PasteView() {
                 const data = await res.json()
 
                 if (res.ok) {
-                    setContent(data.content)
                     // Dynamically import marked for markdown parsing
                     const { marked } = await import('marked')
                     setHtml(await marked(data.content))
