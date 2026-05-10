@@ -57,12 +57,6 @@ export default function PasswordPrompt() {
 
     return (
         <div className="min-h-screen bg-animated flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Background decorations */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 -left-32 w-96 h-96 bg-ocean-500/20 rounded-full blur-3xl animate-float" />
-                <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-ocean-400/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }} />
-            </div>
-
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -72,11 +66,11 @@ export default function PasswordPrompt() {
                 <GlassCard className="space-y-6">
                     {/* Icon */}
                     <div className="text-center space-y-2">
-                        <div className="inline-flex p-3 rounded-xl bg-gradient-to-r from-orange-500/20 to-red-500/20 mb-2">
-                            <Lock className="w-8 h-8 text-orange-400" />
+                        <div className="quest-icon inline-flex p-3 mb-2">
+                            <Lock className="w-8 h-8" />
                         </div>
-                        <h1 className="text-2xl font-bold text-white">Password Required</h1>
-                        <p className="text-white/60">This link is password protected. Enter the password to continue.</p>
+                        <h1 className="text-2xl font-bold text-quest-parchment">Password Required</h1>
+                        <p className="text-quest-muted">This link is password protected. Enter the password to continue.</p>
                     </div>
 
                     {/* Form */}
@@ -94,7 +88,8 @@ export default function PasswordPrompt() {
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-quest-muted hover:text-quest-parchment transition-colors"
+                                title={showPassword ? 'Hide password' : 'Show password'}
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>

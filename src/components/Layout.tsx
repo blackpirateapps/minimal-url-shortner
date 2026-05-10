@@ -14,23 +14,16 @@ export default function Layout() {
 
     return (
         <div className="min-h-screen bg-animated relative overflow-hidden">
-            {/* Decorative background elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 -left-32 w-96 h-96 bg-ocean-500/15 rounded-full blur-3xl" />
-                <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-ocean-400/15 rounded-full blur-3xl" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-400/10 rounded-full blur-3xl" />
-            </div>
-
             {/* Navbar */}
-            <nav className="relative z-10 glass-subtle border-b border-white/10">
+            <nav className="relative z-10 glass-subtle border-b border-quest-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center justify-between min-h-16 py-3 gap-3">
                         {/* Logo */}
                         <Link to="/dashboard" className="flex items-center gap-2">
-                            <div className="p-2 rounded-lg bg-gradient-to-r from-ocean-500 to-ocean-600">
-                                <Link2 className="w-5 h-5 text-white" />
+                            <div className="quest-icon">
+                                <Link2 className="w-5 h-5" />
                             </div>
-                            <span className="text-xl font-bold gradient-text">RapidLink</span>
+                            <span className="text-xl font-bold font-display gradient-text">RapidLink</span>
                         </Link>
 
                         {/* Nav Items */}
@@ -43,10 +36,10 @@ export default function Layout() {
                                         key={item.path}
                                         to={item.path}
                                         className={cn(
-                                            'flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200',
+                                            'flex items-center gap-2 px-4 py-2 rounded font-display text-sm transition-all duration-300 border',
                                             isActive
-                                                ? 'bg-white/10 text-white'
-                                                : 'text-white/60 hover:text-white hover:bg-white/5'
+                                                ? 'bg-quest-gold text-quest-bg border-quest-goldLight shadow-quest'
+                                                : 'text-quest-muted border-transparent hover:text-quest-parchment hover:bg-quest-elevated hover:border-quest-border'
                                         )}
                                     >
                                         <Icon size={18} />
@@ -57,7 +50,7 @@ export default function Layout() {
 
                             <button
                                 onClick={logout}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                                className="flex items-center gap-2 px-4 py-2 rounded font-display text-sm text-quest-muted hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border border-transparent hover:border-red-500/30"
                             >
                                 <LogOut size={18} />
                                 <span className="hidden sm:inline">Logout</span>

@@ -13,20 +13,20 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             primary: 'btn-primary',
             secondary: 'btn-secondary',
             danger: 'btn-danger',
-            ghost: 'hover:bg-white/10 text-white/70 hover:text-white transition-colors',
+            ghost: 'text-quest-muted hover:text-quest-parchment hover:bg-quest-elevated border border-transparent',
         }
 
         const sizes = {
-            sm: 'text-sm py-1.5 px-3',
-            md: 'py-2 px-4',
-            lg: 'text-lg py-3 px-6',
+            sm: 'text-[13px] px-3.5 h-8',
+            md: 'text-sm px-[22px] h-10',
+            lg: 'text-base px-[30px] h-12',
         }
 
         return (
             <button
                 ref={ref}
                 className={cn(
-                    'rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
+                    'inline-flex items-center justify-center gap-2 rounded font-display font-semibold transition-all duration-300 disabled:opacity-[0.35] disabled:cursor-not-allowed disabled:shadow-none',
                     variants[variant],
                     sizes[size],
                     className

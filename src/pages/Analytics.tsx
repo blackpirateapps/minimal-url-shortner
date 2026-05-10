@@ -47,14 +47,15 @@ export default function Analytics() {
             <div className="flex items-center gap-4">
                 <Link
                     to="/dashboard"
-                    className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                    className="p-2 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors"
+                    title="Back to dashboard"
                 >
                     <ArrowLeft size={20} />
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Link Analytics</h1>
-                    <p className="text-white/60">
-                        Stats for: <code className="text-cyan-400 font-mono">{slug}</code>
+                    <h1 className="text-2xl font-bold text-quest-parchment">Link Analytics</h1>
+                    <p className="text-quest-muted">
+                        Stats for: <code className="text-quest-gold font-mono">{slug}</code>
                     </p>
                 </div>
             </div>
@@ -62,34 +63,34 @@ export default function Analytics() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <GlassCard className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20">
-                        <BarChart3 className="w-6 h-6 text-cyan-400" />
+                    <div className="quest-icon">
+                        <BarChart3 className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-sm text-white/60">Total Clicks</p>
-                        <p className="text-2xl font-bold text-white">{clicks.length}</p>
+                        <p className="text-sm text-quest-muted">Total Clicks</p>
+                        <p className="text-2xl font-bold text-quest-parchment">{clicks.length}</p>
                     </div>
                 </GlassCard>
 
                 <GlassCard className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-ocean-500/20 to-ocean-600/20">
-                        <Globe className="w-6 h-6 text-ocean-400" />
+                    <div className="quest-icon quest-icon-purple">
+                        <Globe className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-sm text-white/60">Unique IPs</p>
-                        <p className="text-2xl font-bold text-white">
+                        <p className="text-sm text-quest-muted">Unique IPs</p>
+                        <p className="text-2xl font-bold text-quest-parchment">
                             {new Set(clicks.map((c) => c.ip_address).filter(Boolean)).size}
                         </p>
                     </div>
                 </GlassCard>
 
                 <GlassCard className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20">
+                    <div className="quest-icon bg-green-500/10 border-green-400/30 text-green-400">
                         <Link2 className="w-6 h-6 text-green-400" />
                     </div>
                     <div>
-                        <p className="text-sm text-white/60">Referrers</p>
-                        <p className="text-2xl font-bold text-white">
+                        <p className="text-sm text-quest-muted">Referrers</p>
+                        <p className="text-2xl font-bold text-quest-parchment">
                             {new Set(clicks.map((c) => c.referrer).filter(Boolean)).size}
                         </p>
                     </div>
@@ -98,31 +99,31 @@ export default function Analytics() {
 
             {/* Clicks Table */}
             <GlassCard>
-                <h2 className="text-xl font-semibold text-white mb-4">Click Details</h2>
+                <h2 className="text-xl font-semibold text-quest-parchment mb-4">Click Details</h2>
 
                 {isLoading ? (
-                    <div className="text-center py-8 text-white/60">Loading...</div>
+                    <div className="text-center py-8 text-quest-muted">Loading...</div>
                 ) : error ? (
                     <div className="text-center py-8 text-red-400">{error}</div>
                 ) : clicks.length === 0 ? (
-                    <div className="text-center py-8 text-white/60">
+                    <div className="text-center py-8 text-quest-muted">
                         No clicks recorded yet
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="border-b border-white/10">
-                                    <th className="text-left py-3 px-2 text-xs font-medium text-white/50 uppercase">
+                                <tr className="border-b border-quest-border">
+                                    <th className="text-left py-3 px-2 text-xs font-display font-medium text-quest-muted uppercase">
                                         Timestamp
                                     </th>
-                                    <th className="text-left py-3 px-2 text-xs font-medium text-white/50 uppercase">
+                                    <th className="text-left py-3 px-2 text-xs font-display font-medium text-quest-muted uppercase">
                                         IP Address
                                     </th>
-                                    <th className="text-left py-3 px-2 text-xs font-medium text-white/50 uppercase">
+                                    <th className="text-left py-3 px-2 text-xs font-display font-medium text-quest-muted uppercase">
                                         User Agent
                                     </th>
-                                    <th className="text-left py-3 px-2 text-xs font-medium text-white/50 uppercase">
+                                    <th className="text-left py-3 px-2 text-xs font-display font-medium text-quest-muted uppercase">
                                         Referrer
                                     </th>
                                 </tr>
@@ -134,18 +135,18 @@ export default function Analytics() {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.02 }}
-                                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                                        className="border-b border-quest-border/40 hover:bg-quest-elevated/60 transition-colors"
                                     >
-                                        <td className="py-3 px-2 text-sm text-white/70">
+                                        <td className="py-3 px-2 text-sm text-quest-muted">
                                             {new Date(click.clicked_at).toLocaleString()}
                                         </td>
-                                        <td className="py-3 px-2 text-sm text-white/70 font-mono">
+                                        <td className="py-3 px-2 text-sm text-quest-muted font-mono">
                                             {click.ip_address || 'N/A'}
                                         </td>
-                                        <td className="py-3 px-2 text-sm text-white/70 max-w-[200px] truncate" title={click.user_agent || ''}>
+                                        <td className="py-3 px-2 text-sm text-quest-muted max-w-[200px] truncate" title={click.user_agent || ''}>
                                             {click.user_agent || 'N/A'}
                                         </td>
-                                        <td className="py-3 px-2 text-sm text-cyan-400 max-w-[150px] truncate" title={click.referrer || ''}>
+                                        <td className="py-3 px-2 text-sm text-quest-gold max-w-[150px] truncate" title={click.referrer || ''}>
                                             {click.referrer || 'Direct'}
                                         </td>
                                     </motion.tr>

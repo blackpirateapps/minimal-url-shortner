@@ -80,11 +80,11 @@ export default function ShortenForm({ domains, onSuccess }: ShortenFormProps) {
 
     return (
         <GlassCard>
-            <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-ocean-500/20 to-ocean-600/20">
-                    <Link2 className="w-5 h-5 text-ocean-400" />
+            <div className="quest-card-title">
+                <div className="quest-icon">
+                    <Link2 className="w-5 h-5" />
                 </div>
-                <h2 className="text-xl font-semibold text-white">Shorten URL</h2>
+                <h2 className="text-xl font-semibold text-quest-parchment">Shorten URL</h2>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -144,21 +144,22 @@ export default function ShortenForm({ domains, onSuccess }: ShortenFormProps) {
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20"
+                    className="mt-4 p-4 rounded bg-green-500/10 border border-green-400/25"
                 >
-                    <p className="text-green-400 text-sm font-medium mb-2">Success!</p>
+                    <p className="text-green-400 text-sm font-display font-medium mb-2">Success</p>
                     <div className="flex items-center gap-2">
                         <a
                             href={result}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-cyan-400 hover:text-cyan-300 font-mono text-sm break-all flex-1"
+                            className="text-quest-gold hover:text-quest-goldLight font-mono text-sm break-all flex-1"
                         >
                             {result}
                         </a>
                         <button
                             onClick={copyResult}
-                            className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors flex-shrink-0"
+                            className="p-2 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors flex-shrink-0"
+                            title="Copy short URL"
                         >
                             {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} />}
                         </button>

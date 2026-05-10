@@ -13,7 +13,7 @@ export default function GlassCard({ children, className, animate = false }: Glas
     return (
         <Component
             className={cn(
-                'glass rounded-2xl p-6',
+                'glass p-6',
                 className
             )}
             {...(animate && {

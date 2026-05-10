@@ -87,22 +87,22 @@ export default function PasteForm({ domains, onSuccess }: PasteFormProps) {
 
     return (
         <GlassCard className="max-w-4xl">
-            <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-ocean-500/20 to-ocean-600/20">
-                    <Clipboard className="w-5 h-5 text-ocean-400" />
+            <div className="quest-card-title">
+                <div className="quest-icon">
+                    <Clipboard className="w-5 h-5" />
                 </div>
-                <h2 className="text-xl font-semibold text-white">Create a Paste</h2>
+                <h2 className="text-xl font-semibold text-quest-parchment">Create a Paste</h2>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                    <label className="block text-sm font-medium text-white/70">Content (Markdown supported)</label>
+                    <label className="block font-display text-sm font-medium text-quest-parchment">Content (Markdown supported)</label>
                     <textarea
                         value={form.content}
                         onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
                         rows={8}
                         required
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg glass-input text-white placeholder:text-white/40 outline-none font-mono text-sm resize-y"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded glass-input text-quest-parchment placeholder:text-quest-muted/70 outline-none font-mono text-sm resize-y"
                         placeholder="# Your markdown content here..."
                     />
                 </div>
@@ -148,21 +148,22 @@ export default function PasteForm({ domains, onSuccess }: PasteFormProps) {
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 p-4 rounded-lg bg-green-500/10 border border-green-500/20"
+                    className="mt-4 p-4 rounded bg-green-500/10 border border-green-400/25"
                 >
-                    <p className="text-green-400 text-sm font-medium mb-2">Success!</p>
+                    <p className="text-green-400 text-sm font-display font-medium mb-2">Success</p>
                     <div className="flex items-center gap-2">
                         <a
                             href={result}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-cyan-400 hover:text-cyan-300 font-mono text-sm break-all flex-1"
+                            className="text-quest-gold hover:text-quest-goldLight font-mono text-sm break-all flex-1"
                         >
                             {result}
                         </a>
                         <button
                             onClick={copyResult}
-                            className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors flex-shrink-0"
+                            className="p-2 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors flex-shrink-0"
+                            title="Copy paste URL"
                         >
                             {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} />}
                         </button>

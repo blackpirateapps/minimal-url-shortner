@@ -72,11 +72,11 @@ export default function DomainManager({ domains, onUpdate }: DomainManagerProps)
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Add Domain */}
             <GlassCard>
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-ocean-500/20 to-ocean-600/20">
-                        <Plus className="w-5 h-5 text-ocean-400" />
+                <div className="quest-card-title">
+                    <div className="quest-icon">
+                        <Plus className="w-5 h-5" />
                     </div>
-                    <h3 className="text-lg font-semibold text-white">Add Domain</h3>
+                    <h3 className="text-lg font-semibold text-quest-parchment">Add Domain</h3>
                 </div>
 
                 <form onSubmit={addDomain} className="space-y-4">
@@ -105,15 +105,15 @@ export default function DomainManager({ domains, onUpdate }: DomainManagerProps)
 
             {/* Domain List */}
             <GlassCard>
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20">
-                        <Globe className="w-5 h-5 text-cyan-400" />
+                <div className="quest-card-title">
+                    <div className="quest-icon quest-icon-purple">
+                        <Globe className="w-5 h-5" />
                     </div>
-                    <h3 className="text-lg font-semibold text-white">Your Domains</h3>
+                    <h3 className="text-lg font-semibold text-quest-parchment">Your Domains</h3>
                 </div>
 
                 {domains.length === 0 ? (
-                    <p className="text-white/50 text-sm">No domains added yet</p>
+                    <p className="text-quest-muted text-sm">No domains added yet</p>
                 ) : (
                     <div className="space-y-2">
                         {domains.map((domain) => (
@@ -121,12 +121,13 @@ export default function DomainManager({ domains, onUpdate }: DomainManagerProps)
                                 key={domain.hostname}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                                className="quest-row flex items-center justify-between p-3"
                             >
-                                <span className="text-white font-medium">{domain.hostname}</span>
+                                <span className="text-quest-parchment font-medium">{domain.hostname}</span>
                                 <button
                                     onClick={() => deleteDomain(domain.hostname)}
-                                    className="p-1.5 rounded-lg hover:bg-red-500/20 text-white/60 hover:text-red-400 transition-colors"
+                                    className="p-1.5 rounded hover:bg-red-500/20 text-quest-muted hover:text-red-400 transition-colors"
+                                    title="Delete domain"
                                 >
                                     <Trash2 size={16} />
                                 </button>

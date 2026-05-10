@@ -65,11 +65,11 @@ export default function PasteList({ pastes, isLoading, onUpdate }: PasteListProp
     return (
         <GlassCard className="mt-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <h2 className="text-lg sm:text-xl font-semibold text-white">Your Pastes</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-quest-parchment">Your Pastes</h2>
                 {expiredCount > 0 && (
                     <button
                         onClick={() => setShowExpired(!showExpired)}
-                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+                        className="flex items-center gap-2 text-sm text-quest-muted hover:text-quest-parchment transition-colors"
                     >
                         <AlertTriangle size={14} />
                         {showExpired ? 'Hide' : 'Show'} {expiredCount} expired
@@ -78,9 +78,9 @@ export default function PasteList({ pastes, isLoading, onUpdate }: PasteListProp
             </div>
 
             {isLoading ? (
-                <div className="text-center py-8 text-white/60">Loading pastes...</div>
+                <div className="text-center py-8 text-quest-muted">Loading pastes...</div>
             ) : filteredPastes.length === 0 ? (
-                <div className="text-center py-8 text-white/60">
+                <div className="text-center py-8 text-quest-muted">
                     {pastes.length === 0 ? 'No pastes yet' : 'No active pastes'}
                 </div>
             ) : (
@@ -92,9 +92,9 @@ export default function PasteList({ pastes, isLoading, onUpdate }: PasteListProp
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className={`p-3 sm:p-4 rounded-lg border transition-colors ${paste.isExpired
+                                className={`p-3 sm:p-4 rounded border transition-colors ${paste.isExpired
                                         ? 'bg-red-500/5 border-red-500/20'
-                                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                        : 'quest-row'
                                     }`}
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -107,22 +107,22 @@ export default function PasteList({ pastes, isLoading, onUpdate }: PasteListProp
                                                 rel="noopener noreferrer"
                                                 className={`font-mono text-sm flex items-center gap-1 ${paste.isExpired
                                                         ? 'text-red-400/70 line-through'
-                                                        : 'text-ocean-400 hover:text-ocean-300'
+                                                        : 'text-quest-gold hover:text-quest-goldLight'
                                                     }`}
                                             >
                                                 <span className="truncate">{paste.hostname}/p/{paste.slug}</span>
                                                 <ExternalLink size={12} className="flex-shrink-0" />
                                             </a>
                                             {paste.hasPassword && (
-                                                <Lock size={14} className="text-white/40 flex-shrink-0" />
+                                                <Lock size={14} className="text-quest-muted flex-shrink-0" />
                                             )}
                                             {paste.isExpired && (
-                                                <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">
+                                                <span className="quest-chip quest-chip-error">
                                                     Expired
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-3 mt-1 text-xs text-white/50">
+                                        <div className="flex items-center gap-3 mt-1 text-xs text-quest-muted">
                                             <span>Created: {formatDate(paste.createdAt)}</span>
                                             <span className="flex items-center gap-1">
                                                 <Clock size={10} />
@@ -135,7 +135,7 @@ export default function PasteList({ pastes, isLoading, onUpdate }: PasteListProp
                                     <div className="flex items-center gap-1 self-end sm:self-center">
                                         <button
                                             onClick={() => copyToClipboard(paste.slug, paste.hostname)}
-                                            className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                                            className="p-2 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors"
                                             title="Copy link"
                                         >
                                             {copiedSlug === paste.slug ? (
@@ -146,7 +146,7 @@ export default function PasteList({ pastes, isLoading, onUpdate }: PasteListProp
                                         </button>
                                         <button
                                             onClick={() => deletePaste(paste.slug)}
-                                            className="p-2 rounded-lg hover:bg-red-500/20 text-white/60 hover:text-red-400 transition-colors"
+                                            className="p-2 rounded hover:bg-red-500/20 text-quest-muted hover:text-red-400 transition-colors"
                                             title="Delete"
                                         >
                                             <Trash2 size={16} />

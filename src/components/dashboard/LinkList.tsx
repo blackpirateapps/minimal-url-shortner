@@ -115,18 +115,18 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
     return (
         <>
             <GlassCard>
-                <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">Active Links</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-quest-parchment mb-4">Active Links</h2>
 
                 {/* Filters - Stacked on mobile */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">
                     <div className="relative col-span-2 sm:col-span-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-quest-muted" />
                         <input
                             type="text"
                             placeholder="Search..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-lg glass-input text-white placeholder:text-white/40 outline-none text-sm"
+                            className="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded glass-input text-quest-parchment placeholder:text-quest-muted/70 outline-none text-sm"
                         />
                     </div>
                     <Select options={domainOptions} value={domainFilter} onChange={(e) => setDomainFilter(e.target.value)} />
@@ -135,9 +135,9 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
 
                 {/* Links - Card layout on mobile, table on desktop */}
                 {isLoading ? (
-                    <div className="text-center py-8 text-white/60">Loading links...</div>
+                    <div className="text-center py-8 text-quest-muted">Loading links...</div>
                 ) : filteredLinks.length === 0 ? (
-                    <div className="text-center py-8 text-white/60">No links found</div>
+                    <div className="text-center py-8 text-quest-muted">No links found</div>
                 ) : (
                     <>
                         {/* Mobile Card View */}
@@ -149,7 +149,7 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -10 }}
-                                        className="p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                                        className="quest-row p-3"
                                     >
                                         <div className="flex items-start justify-between gap-2 mb-2">
                                             <div className="flex-1 min-w-0">
@@ -158,18 +158,18 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
                                                         href={`https://${link.hostname}/${link.slug}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-ocean-400 hover:text-ocean-300 font-mono text-sm flex items-center gap-1 truncate"
+                                                        className="text-quest-gold hover:text-quest-goldLight font-mono text-sm flex items-center gap-1 truncate"
                                                     >
                                                         {link.hostname}/{link.slug}
                                                         <ExternalLink size={12} className="flex-shrink-0" />
                                                     </a>
-                                                    {link.password && <Lock size={12} className="text-white/40 flex-shrink-0" />}
+                                                    {link.password && <Lock size={12} className="text-quest-muted flex-shrink-0" />}
                                                 </div>
-                                                <p className="text-white/50 text-xs mt-1 truncate">{link.url}</p>
+                                                <p className="text-quest-muted text-xs mt-1 truncate">{link.url}</p>
                                             </div>
                                             <Link
                                                 to={`/details/${link.slug}`}
-                                                className="flex items-center gap-1 text-ocean-400 text-sm px-2 py-1 rounded bg-ocean-500/10"
+                                                className="quest-chip flex items-center gap-1"
                                             >
                                                 <BarChart3 size={12} />
                                                 {link.click_count || 0}
@@ -178,19 +178,22 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
                                         <div className="flex items-center gap-1 justify-end">
                                             <button
                                                 onClick={() => copyToClipboard(link.slug, link.hostname)}
-                                                className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                                                className="p-2 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors"
+                                                title="Copy"
                                             >
                                                 {copiedSlug === link.slug ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
                                             </button>
                                             <button
                                                 onClick={() => openEditModal(link)}
-                                                className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                                                className="p-2 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors"
+                                                title="Edit"
                                             >
                                                 <Edit2 size={16} />
                                             </button>
                                             <button
                                                 onClick={() => deleteLink(link.slug)}
-                                                className="p-2 rounded-lg hover:bg-red-500/20 text-white/60 hover:text-red-400 transition-colors"
+                                                className="p-2 rounded hover:bg-red-500/20 text-quest-muted hover:text-red-400 transition-colors"
+                                                title="Delete"
                                             >
                                                 <Trash2 size={16} />
                                             </button>
@@ -204,11 +207,11 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
                         <div className="hidden lg:block overflow-x-auto">
                             <table className="w-full">
                                 <thead>
-                                    <tr className="border-b border-white/10">
-                                        <th className="text-left py-3 px-2 text-xs font-medium text-white/50 uppercase">Short Link</th>
-                                        <th className="text-left py-3 px-2 text-xs font-medium text-white/50 uppercase">Destination</th>
-                                        <th className="text-left py-3 px-2 text-xs font-medium text-white/50 uppercase">Clicks</th>
-                                        <th className="text-left py-3 px-2 text-xs font-medium text-white/50 uppercase">Actions</th>
+                                    <tr className="border-b border-quest-border">
+                                        <th className="text-left py-3 px-2 text-xs font-display font-medium text-quest-muted uppercase">Short Link</th>
+                                        <th className="text-left py-3 px-2 text-xs font-display font-medium text-quest-muted uppercase">Destination</th>
+                                        <th className="text-left py-3 px-2 text-xs font-display font-medium text-quest-muted uppercase">Clicks</th>
+                                        <th className="text-left py-3 px-2 text-xs font-display font-medium text-quest-muted uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -219,7 +222,7 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 exit={{ opacity: 0 }}
-                                                className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                                                className="border-b border-quest-border/40 hover:bg-quest-elevated/60 transition-colors"
                                             >
                                                 <td className="py-3 px-2">
                                                     <div className="flex items-center gap-2">
@@ -227,23 +230,23 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
                                                             href={`https://${link.hostname}/${link.slug}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="text-ocean-400 hover:text-ocean-300 font-mono text-sm flex items-center gap-1"
+                                                            className="text-quest-gold hover:text-quest-goldLight font-mono text-sm flex items-center gap-1"
                                                         >
                                                             {link.hostname}/{link.slug}
                                                             <ExternalLink size={12} />
                                                         </a>
-                                                        {link.password && <Lock size={14} className="text-white/40" />}
+                                                        {link.password && <Lock size={14} className="text-quest-muted" />}
                                                     </div>
                                                 </td>
                                                 <td className="py-3 px-2">
-                                                    <span className="text-white/70 text-sm truncate block max-w-[200px]" title={link.url}>
+                                                    <span className="text-quest-muted text-sm truncate block max-w-[200px]" title={link.url}>
                                                         {link.url}
                                                     </span>
                                                 </td>
                                                 <td className="py-3 px-2">
                                                     <Link
                                                         to={`/details/${link.slug}`}
-                                                        className="text-ocean-400 hover:text-ocean-300 font-medium"
+                                                        className="text-quest-gold hover:text-quest-goldLight font-medium"
                                                     >
                                                         {link.click_count || 0}
                                                     </Link>
@@ -252,21 +255,21 @@ export default function LinkList({ links, domains, isLoading, onUpdate }: LinkLi
                                                     <div className="flex items-center gap-1">
                                                         <button
                                                             onClick={() => copyToClipboard(link.slug, link.hostname)}
-                                                            className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                                                            className="p-2 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors"
                                                             title="Copy"
                                                         >
                                                             {copiedSlug === link.slug ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
                                                         </button>
                                                         <button
                                                             onClick={() => openEditModal(link)}
-                                                            className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                                                            className="p-2 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors"
                                                             title="Edit"
                                                         >
                                                             <Edit2 size={16} />
                                                         </button>
                                                         <button
                                                             onClick={() => deleteLink(link.slug)}
-                                                            className="p-2 rounded-lg hover:bg-red-500/20 text-white/60 hover:text-red-400 transition-colors"
+                                                            className="p-2 rounded hover:bg-red-500/20 text-quest-muted hover:text-red-400 transition-colors"
                                                             title="Delete"
                                                         >
                                                             <Trash2 size={16} />

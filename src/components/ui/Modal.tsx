@@ -21,7 +21,7 @@ export default function Modal({ isOpen, onClose, title, children, className }: M
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
                     />
 
                     {/* Modal */}
@@ -34,17 +34,18 @@ export default function Modal({ isOpen, onClose, title, children, className }: M
                     >
                         <div
                             className={cn(
-                                'glass rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto',
+                                'glass p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-quest-lg',
                                 className
                             )}
                             onClick={(e) => e.stopPropagation()}
                         >
                             {title && (
                                 <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-xl font-semibold text-white">{title}</h2>
+                                    <h2 className="text-xl font-semibold text-quest-parchment">{title}</h2>
                                     <button
                                         onClick={onClose}
-                                        className="p-1 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                                        className="p-1 rounded hover:bg-quest-elevated text-quest-muted hover:text-quest-parchment transition-colors"
+                                        title="Close"
                                     >
                                         <X size={20} />
                                     </button>

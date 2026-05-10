@@ -13,7 +13,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-dark-900">
-                <div className="text-white/60">Loading...</div>
+                <div className="font-display text-quest-muted">Loading...</div>
             </div>
         )
     }

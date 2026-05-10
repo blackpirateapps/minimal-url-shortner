@@ -88,13 +88,14 @@ export default function Dashboard() {
     return (
         <div className="space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard</h1>
-                    <p className="text-white/60 mt-1 text-sm sm:text-base">Manage your short links and pastes</p>
+                    <p className="quest-chip mb-3">Command Hall</p>
+                    <h1 className="text-2xl sm:text-4xl font-bold text-quest-parchment">Dashboard</h1>
+                    <p className="text-quest-muted mt-1 text-sm sm:text-base">Manage your short links and markdown pastes.</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:justify-end">
                     <Button
                         variant={activeTab === 'links' ? 'primary' : 'secondary'}
                         onClick={() => setActiveTab('links')}
@@ -117,7 +118,7 @@ export default function Dashboard() {
             {/* Domain Manager Toggle */}
             <button
                 onClick={() => setShowDomains(!showDomains)}
-                className="flex items-center gap-2 text-ocean-400 hover:text-ocean-300 transition-colors text-sm"
+                className="flex items-center gap-2 font-display text-sm text-quest-gold hover:text-quest-goldLight transition-colors"
             >
                 {showDomains ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 Manage Domains
