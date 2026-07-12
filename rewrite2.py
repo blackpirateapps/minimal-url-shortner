@@ -1,3 +1,10 @@
+import os
+
+def write_file(path, content):
+    with open(path, 'w') as f:
+        f.write(content.strip() + '\n')
+
+write_file('src/pages/Dashboard.tsx', """
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -243,3 +250,4 @@ export default function Dashboard() {
         </div>
     )
 }
+""")
