@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, BarChart3, Globe, Link2, Monitor, MapPin } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import GlassCard from '@/components/ui/GlassCard'
 
 interface AnalyticsData {
@@ -22,7 +22,7 @@ interface AnalyticsData {
     };
 }
 
-const COLORS = ['#FCD34D', '#A78BFA', '#34D399', '#60A5FA', '#F472B6'];
+
 
 export default function Analytics() {
     const { slug } = useParams<{ slug: string }>()
