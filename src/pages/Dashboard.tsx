@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 export interface Domain { hostname: string }
@@ -25,6 +25,17 @@ export default function Dashboard() {
     const [pastePassword, setPastePassword] = useState('')
 
     const [view, setView] = useState<'links' | 'pastes' | 'domains'>('links')
+
+    // List viewing options
+    const [searchQuery, setSearchQuery] = useState('')
+    const [sortField, setSortField] = useState<'date' | 'clicks' | 'slug'>('date')
+    const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
+    const [itemsPerPage, setItemsPerPage] = useState(10)
+    const [currentPage, setCurrentPage] = useState(1)
+
+    // Similar states for pastes
+    const [pasteSearchQuery, setPasteSearchQuery] = useState('')
+    const [pasteCurrentPage, setPasteCurrentPage] = useState(1)
 
     const fetchDomains = async () => {
         const res = await fetch('/api/domains')
@@ -101,6 +112,46 @@ export default function Dashboard() {
         fetchPastes()
     }
 
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text)
+    }
+
+    // Prepare Links Data
+    const processedLinks = useMemo(() => {
+        let l = links.filter(link => 
+            link.slug.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            link.url.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        l.sort((a, b) => {
+            let comp = 0
+            if (sortField === 'slug') comp = a.slug.localeCompare(b.slug)
+            else if (sortField === 'clicks') comp = a.click_count - b.click_count
+            else comp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            return sortOrder === 'asc' ? comp : -comp
+        })
+        return l
+    }, [links, searchQuery, sortField, sortOrder])
+
+    const totalPages = Math.ceil(processedLinks.length / itemsPerPage)
+    const paginatedLinks = processedLinks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+    // Prepare Pastes Data
+    const processedPastes = useMemo(() => {
+        return pastes.filter(paste => paste.slug.toLowerCase().includes(pasteSearchQuery.toLowerCase()))
+    }, [pastes, pasteSearchQuery])
+
+    const pasteTotalPages = Math.ceil(processedPastes.length / itemsPerPage)
+    const paginatedPastes = processedPastes.slice((pasteCurrentPage - 1) * itemsPerPage, pasteCurrentPage * itemsPerPage)
+
+    // Reset pagination when data changes
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [searchQuery, sortField, sortOrder, itemsPerPage])
+
+    useEffect(() => {
+        setPasteCurrentPage(1)
+    }, [pasteSearchQuery, itemsPerPage])
+
     return (
         <div>
             <div style={{ marginBottom: '10px' }}>
@@ -160,28 +211,68 @@ export default function Dashboard() {
                         </table>
                     </form>
 
-                    <b>Links ({links.length})</b>
-                    <table style={{ width: '100%', marginTop: '5px' }} border={0} cellPadding={3}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                        <b>Links ({processedLinks.length})</b>
+                        <div>
+                            <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                            {' '}Sort:{' '}
+                            <select value={sortField} onChange={(e) => setSortField(e.target.value as any)}>
+                                <option value="date">Date</option>
+                                <option value="clicks">Clicks</option>
+                                <option value="slug">Slug</option>
+                            </select>
+                            {' '}
+                            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)}>
+                                <option value="desc">Desc</option>
+                                <option value="asc">Asc</option>
+                            </select>
+                            {' '}Per page:{' '}
+                            <select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <table style={{ width: '100%' }} border={0} cellPadding={3}>
                         <tbody>
-                            <tr style={{ backgroundColor: '#ff6600', color: '#000' }}>
+                            <tr className="table-header">
                                 <th>Slug</th>
                                 <th>Destination</th>
                                 <th>Clicks</th>
+                                <th>Date</th>
                                 <th>Actions</th>
                             </tr>
-                            {links.map((link, i) => (
+                            {paginatedLinks.map((link, i) => {
+                                const fullUrl = `https://${link.hostname}/${link.slug}`;
+                                return (
                                 <tr key={link.slug} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#eee' }}>
-                                    <td><a href={`https://${link.hostname}/${link.slug}`} target="_blank">{link.slug}</a> {link.password ? '(protected)' : ''}</td>
-                                    <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.url}</td>
-                                    <td>{link.click_count}</td>
                                     <td>
-                                        <Link to={`/details/${link.slug}`}>stats</Link> | 
-                                        <a href="#" onClick={(e) => {e.preventDefault(); handleDeleteLink(link.slug)}}>delete</a>
+                                        <a href={fullUrl} target="_blank">{link.slug}</a> 
+                                        {link.password ? ' (protected)' : ''}
+                                    </td>
+                                    <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.url}</td>
+                                    <td align="center">{link.click_count}</td>
+                                    <td align="center">{new Date(link.created_at).toLocaleDateString()}</td>
+                                    <td align="center">
+                                        <a href="#" onClick={(e) => {e.preventDefault(); copyToClipboard(fullUrl)}}>[copy]</a>{' '}
+                                        <Link to={`/details/${link.slug}`}>[stats]</Link>{' '}
+                                        <a href="#" onClick={(e) => {e.preventDefault(); handleDeleteLink(link.slug)}}>[delete]</a>
                                     </td>
                                 </tr>
-                            ))}
+                                )
+                            })}
                         </tbody>
                     </table>
+                    
+                    {totalPages > 1 && (
+                        <div style={{ marginTop: '10px' }}>
+                            <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
+                            {' '}Page {currentPage} of {totalPages}{' '}
+                            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -219,25 +310,47 @@ export default function Dashboard() {
                         </table>
                     </form>
 
-                    <b>Pastes ({pastes.length})</b>
-                    <table style={{ width: '100%', marginTop: '5px' }} border={0} cellPadding={3}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                        <b>Pastes ({processedPastes.length})</b>
+                        <div>
+                            <input type="text" placeholder="Search..." value={pasteSearchQuery} onChange={(e) => setPasteSearchQuery(e.target.value)} />
+                        </div>
+                    </div>
+
+                    <table style={{ width: '100%' }} border={0} cellPadding={3}>
                         <tbody>
-                            <tr style={{ backgroundColor: '#ff6600', color: '#000' }}>
+                            <tr className="table-header">
                                 <th>Slug</th>
+                                <th>Status</th>
                                 <th>Created</th>
                                 <th>Actions</th>
                             </tr>
-                            {pastes.map((paste, i) => (
+                            {paginatedPastes.map((paste, i) => {
+                                const fullUrl = `https://${paste.hostname}/p/${paste.slug}`;
+                                return (
                                 <tr key={paste.slug} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#eee' }}>
-                                    <td><a href={`https://${paste.hostname}/p/${paste.slug}`} target="_blank">{paste.slug}</a> {paste.hasPassword ? '(protected)' : ''}</td>
-                                    <td>{new Date(paste.createdAt).toLocaleString()}</td>
-                                    <td>
-                                        <a href="#" onClick={(e) => {e.preventDefault(); handleDeletePaste(paste.slug)}}>delete</a>
+                                    <td><a href={fullUrl} target="_blank">{paste.slug}</a></td>
+                                    <td align="center">
+                                        {paste.isExpired ? 'Expired' : (paste.hasPassword ? 'Protected' : 'Live')}
+                                    </td>
+                                    <td align="center">{new Date(paste.createdAt).toLocaleString()}</td>
+                                    <td align="center">
+                                        <a href="#" onClick={(e) => {e.preventDefault(); copyToClipboard(fullUrl)}}>[copy]</a>{' '}
+                                        <a href="#" onClick={(e) => {e.preventDefault(); handleDeletePaste(paste.slug)}}>[delete]</a>
                                     </td>
                                 </tr>
-                            ))}
+                                )
+                            })}
                         </tbody>
                     </table>
+                    
+                    {pasteTotalPages > 1 && (
+                        <div style={{ marginTop: '10px' }}>
+                            <button disabled={pasteCurrentPage === 1} onClick={() => setPasteCurrentPage(p => p - 1)}>Prev</button>
+                            {' '}Page {pasteCurrentPage} of {pasteTotalPages}{' '}
+                            <button disabled={pasteCurrentPage === pasteTotalPages} onClick={() => setPasteCurrentPage(p => p + 1)}>Next</button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

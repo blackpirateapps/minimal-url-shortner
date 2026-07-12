@@ -89,7 +89,7 @@ export default function Analytics() {
                             <b>Top Referrers</b>
                             <table width="90%" border={1} cellPadding={3} style={{ borderCollapse: 'collapse', borderColor: '#eee', marginTop: '5px' }}>
                                 <tbody>
-                                    <tr style={{ backgroundColor: '#ff6600', color: '#000' }}><th>Referrer</th><th>Views</th></tr>
+                                    <tr className="table-header"><th>Referrer</th><th>Views</th></tr>
                                     {data.referrers?.slice(0, 5).map((ref, i) => (
                                         <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#fff' }}>
                                             <td>{ref.x || 'Direct'}</td>
@@ -104,7 +104,7 @@ export default function Analytics() {
                             <b>Top Countries</b>
                             <table width="90%" border={1} cellPadding={3} style={{ borderCollapse: 'collapse', borderColor: '#eee', marginTop: '5px' }}>
                                 <tbody>
-                                    <tr style={{ backgroundColor: '#ff6600', color: '#000' }}><th>Country</th><th>Views</th></tr>
+                                    <tr className="table-header"><th>Country</th><th>Views</th></tr>
                                     {data.countries?.slice(0, 5).map((c, i) => (
                                         <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#fff' }}>
                                             <td>{c.x || 'Unknown'}</td>

@@ -64,19 +64,24 @@ button:hover {
 }
 
 .topbar {
-  background-color: #ff6600;
+  background-color: #3366cc;
   padding: 4px;
 }
 
 .topbar-text {
   font-weight: bold;
-  color: #000000;
+  color: #ffffff;
   font-size: 10pt;
 }
 
 .header-link {
-  color: #000000;
+  color: #ffffff;
   margin-right: 10px;
+}
+
+.table-header {
+  background-color: #3366cc;
+  color: #ffffff;
 }
 
 .container {
