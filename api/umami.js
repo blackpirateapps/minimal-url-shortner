@@ -18,7 +18,10 @@ export async function sendToUmami(req, slug) {
             type: "event"
         };
         
-        const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress;
+        let clientIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket?.remoteAddress || '';
+        if (clientIp) {
+            clientIp = clientIp.split(',')[0].trim(); // Vercel often provides multiple IPs, we just want the original client's IP
+        }
         const userAgent = req.headers['user-agent'];
         
         const response = await fetch(`${cleanUmamiUrl}/api/send`, {
@@ -26,7 +29,9 @@ export async function sendToUmami(req, slug) {
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': userAgent || '',
-                'x-forwarded-for': ip || '',
+                'x-forwarded-for': clientIp,
+                'x-real-ip': clientIp,
+                'x-client-ip': clientIp,
             },
             body: JSON.stringify(payload)
         });
