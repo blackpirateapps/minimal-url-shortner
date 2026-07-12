@@ -1,6 +1,7 @@
 // /api/_handlers.js
 import { customAlphabet } from "nanoid";
 import bcrypt from 'bcryptjs';
+import { sendToUmami } from './umami.js';
 
 const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 7);
 
@@ -59,15 +60,8 @@ export async function handleVerifyPassword(req, res, db, bodyData) {
 
   if (isPasswordCorrect) {
     try {
-        // FIXED: Ensure undefined headers are converted to null
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || null;
-        const userAgent = req.headers['user-agent'] || null;
-        const referrer = req.headers['referer'] || null;
-        
-        await db.batch([
-          { sql: "INSERT INTO clicks (link_slug, ip_address, user_agent, referrer) VALUES (?, ?, ?, ?)", args: [slug, ip, userAgent, referrer] },
-          { sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?", args: [slug] }
-        ], 'write');
+        await sendToUmami(req, slug);
+        await db.execute({ sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?", args: [slug] });
     } catch (dbError) { 
         console.error(`[ERROR][API] Failed to log analytics for protected slug ${slug}:`, dbError); 
     }
@@ -110,8 +104,74 @@ export async function handleShortenUrl(req, res, db, bodyData) {
 export async function handleGetLinkDetails(req, res, db) {
     const { slug } = req.query;
     if (!slug) return res.status(400).json({ error: "Slug is required." });
-    const result = await db.execute({ sql: "SELECT * FROM clicks WHERE link_slug = ? ORDER BY clicked_at DESC", args: [slug] });
-    return res.status(200).json(result.rows);
+
+    const umamiUrl = process.env.UMAMI_URL;
+    const websiteId = process.env.UMAMI_WEBSITE_ID;
+    const username = process.env.UMAMI_USERNAME;
+    const password = process.env.UMAMI_PASSWORD;
+
+    if (!umamiUrl || !websiteId || (!username || !password)) {
+         return res.status(503).json({ error: "Umami is not configured. Missing UMAMI_URL, UMAMI_WEBSITE_ID, UMAMI_USERNAME, or UMAMI_PASSWORD." });
+    }
+
+    try {
+        // Authenticate with Umami to get a token
+        const authRes = await fetch(`${umamiUrl}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        if (!authRes.ok) {
+            console.error("Umami auth failed");
+            return res.status(401).json({ error: "Failed to authenticate with Umami." });
+        }
+        
+        const authData = await authRes.json();
+        const token = authData.token;
+        const authHeader = { 'Authorization': `Bearer ${token}` };
+
+        const endAt = Date.now();
+        const startAt = endAt - 30 * 24 * 60 * 60 * 1000; // last 30 days
+        const queryUrl = `/${slug}`;
+
+        // Fetch stats
+        const statsRes = await fetch(`${umamiUrl}/api/websites/${websiteId}/stats?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}`, {
+            headers: authHeader
+        });
+        const stats = await statsRes.json();
+
+        // Helper to fetch metrics
+        const fetchMetric = async (type) => {
+             const res = await fetch(`${umamiUrl}/api/websites/${websiteId}/metrics?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}&type=${type}`, {
+                  headers: authHeader
+             });
+             return res.json();
+        };
+
+        const referrers = await fetchMetric('referrer');
+        const browsers = await fetchMetric('browser');
+        const os = await fetchMetric('os');
+        const countries = await fetchMetric('country');
+
+        // Fetch pageviews over time (for charts)
+        const pageviewsRes = await fetch(`${umamiUrl}/api/websites/${websiteId}/pageviews?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}&unit=day`, {
+             headers: authHeader
+        });
+        const pageviews = await pageviewsRes.json();
+
+        return res.status(200).json({
+             stats,
+             referrers,
+             browsers,
+             os,
+             countries,
+             pageviews
+        });
+    } catch (e) {
+        console.error("Umami API error:", e);
+        return res.status(500).json({ error: "Failed to fetch analytics from Umami." });
+    }
 }
 export async function handleGetLinks(req, res, db) {
     const result = await db.execute("SELECT slug, url, created_at, click_count, hostname, password FROM links ORDER BY created_at DESC");
