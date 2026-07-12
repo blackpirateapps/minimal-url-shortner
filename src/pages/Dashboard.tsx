@@ -154,7 +154,7 @@ export default function Dashboard() {
 
     return (
         <div>
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '15px' }}>
                 <a href="#" onClick={(e) => {e.preventDefault(); setView('links')}}>Links</a> | 
                 <a href="#" onClick={(e) => {e.preventDefault(); setView('pastes')}}> Pastes</a> | 
                 <a href="#" onClick={(e) => {e.preventDefault(); setView('domains')}}> Domains</a>
@@ -163,15 +163,22 @@ export default function Dashboard() {
             {view === 'domains' && (
                 <div>
                     <b>Manage Domains</b>
-                    <ul>
+                    <ul style={{ paddingLeft: '20px', margin: '10px 0' }}>
                         {domains.map(d => (
-                            <li key={d.hostname}>
+                            <li key={d.hostname} style={{ marginBottom: '5px' }}>
                                 {d.hostname} [<a href="#" onClick={(e) => {e.preventDefault(); handleDeleteDomain(d.hostname)}}>delete</a>]
                             </li>
                         ))}
                     </ul>
                     <form onSubmit={handleAddDomain} style={{ marginTop: '10px' }}>
-                        <input type="text" placeholder="example.com" value={newDomain} onChange={e => setNewDomain(e.target.value)} required />
+                        <input 
+                            type="text" 
+                            placeholder="example.com" 
+                            value={newDomain} 
+                            onChange={e => setNewDomain(e.target.value)} 
+                            required 
+                            style={{ width: '100%', maxWidth: '200px', marginRight: '5px', marginBottom: '5px' }} 
+                        />
                         <button type="submit">Add Domain</button>
                     </form>
                 </div>
@@ -181,52 +188,57 @@ export default function Dashboard() {
                 <div>
                     <b>Create Link</b>
                     <form onSubmit={handleShorten} style={{ marginBottom: '20px', backgroundColor: '#eee', padding: '10px' }}>
-                        <table>
+                        <table style={{ width: '100%', maxWidth: '400px' }}>
                             <tbody>
                                 <tr>
-                                    <td>URL:</td>
-                                    <td><input type="url" value={longUrl} onChange={e => setLongUrl(e.target.value)} required style={{width: '300px'}} /></td>
+                                    <td style={{ width: '90px' }}>URL:</td>
+                                    <td><input type="url" value={longUrl} onChange={e => setLongUrl(e.target.value)} required style={{ width: '100%' }} /></td>
                                 </tr>
                                 <tr>
                                     <td>Domain:</td>
                                     <td>
-                                        <select value={selectedDomain} onChange={e => setSelectedDomain(e.target.value)}>
+                                        <select value={selectedDomain} onChange={e => setSelectedDomain(e.target.value)} style={{ width: '100%' }}>
                                             {domains.map(d => <option key={d.hostname} value={d.hostname}>{d.hostname}</option>)}
                                         </select>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Custom Slug:</td>
-                                    <td><input type="text" value={customSlug} onChange={e => setCustomSlug(e.target.value)} /></td>
+                                    <td><input type="text" value={customSlug} onChange={e => setCustomSlug(e.target.value)} style={{ width: '100%' }} /></td>
                                 </tr>
                                 <tr>
                                     <td>Password:</td>
-                                    <td><input type="password" value={linkPassword} onChange={e => setLinkPassword(e.target.value)} /></td>
+                                    <td><input type="password" value={linkPassword} onChange={e => setLinkPassword(e.target.value)} style={{ width: '100%' }} /></td>
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td><button type="submit">Shorten</button></td>
+                                    <td><button type="submit" style={{ marginTop: '5px' }}>Shorten</button></td>
                                 </tr>
                             </tbody>
                         </table>
                     </form>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <b>Links ({processedLinks.length})</b>
-                        <div>
-                            <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                            {' '}Sort:{' '}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', fontSize: '9pt' }}>
+                            <input 
+                                type="text" 
+                                placeholder="Search..." 
+                                value={searchQuery} 
+                                onChange={(e) => setSearchQuery(e.target.value)} 
+                                style={{ width: '120px' }}
+                            />
+                            <span>Sort:</span>
                             <select value={sortField} onChange={(e) => setSortField(e.target.value as any)}>
                                 <option value="date">Date</option>
                                 <option value="clicks">Clicks</option>
                                 <option value="slug">Slug</option>
                             </select>
-                            {' '}
                             <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)}>
                                 <option value="desc">Desc</option>
                                 <option value="asc">Asc</option>
                             </select>
-                            {' '}Per page:{' '}
+                            <span>Per page:</span>
                             <select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}>
                                 <option value="10">10</option>
                                 <option value="20">20</option>
@@ -235,36 +247,38 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <table style={{ width: '100%' }} border={0} cellPadding={3}>
-                        <tbody>
-                            <tr className="table-header">
-                                <th>Slug</th>
-                                <th>Destination</th>
-                                <th>Clicks</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                            {paginatedLinks.map((link, i) => {
-                                const fullUrl = `https://${link.hostname}/${link.slug}`;
-                                return (
-                                <tr key={link.slug} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#eee' }}>
-                                    <td>
-                                        <a href={fullUrl} target="_blank">{link.slug}</a> 
-                                        {link.password ? ' (protected)' : ''}
-                                    </td>
-                                    <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.url}</td>
-                                    <td align="center">{link.click_count}</td>
-                                    <td align="center">{new Date(link.created_at).toLocaleDateString()}</td>
-                                    <td align="center">
-                                        <a href="#" onClick={(e) => {e.preventDefault(); copyToClipboard(fullUrl)}}>[copy]</a>{' '}
-                                        <Link to={`/details/${link.slug}`}>[stats]</Link>{' '}
-                                        <a href="#" onClick={(e) => {e.preventDefault(); handleDeleteLink(link.slug)}}>[delete]</a>
-                                    </td>
+                    <div className="table-responsive">
+                        <table style={{ width: '100%', minWidth: '600px' }} border={0} cellPadding={3}>
+                            <tbody>
+                                <tr className="table-header">
+                                    <th align="left">Slug</th>
+                                    <th align="left">Destination</th>
+                                    <th>Clicks</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
                                 </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+                                {paginatedLinks.map((link, i) => {
+                                    const fullUrl = `https://${link.hostname}/${link.slug}`;
+                                    return (
+                                    <tr key={link.slug} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#eee' }}>
+                                        <td>
+                                            <a href={fullUrl} target="_blank">{link.slug}</a> 
+                                            {link.password ? ' (protected)' : ''}
+                                        </td>
+                                        <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.url}</td>
+                                        <td align="center">{link.click_count}</td>
+                                        <td align="center">{new Date(link.created_at).toLocaleDateString()}</td>
+                                        <td align="center">
+                                            <a href="#" onClick={(e) => {e.preventDefault(); copyToClipboard(fullUrl)}}>[copy]</a>{' '}
+                                            <Link to={`/details/${link.slug}`}>[stats]</Link>{' '}
+                                            <a href="#" onClick={(e) => {e.preventDefault(); handleDeleteLink(link.slug)}}>[delete]</a>
+                                        </td>
+                                    </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                     
                     {totalPages > 1 && (
                         <div style={{ marginTop: '10px' }}>
@@ -280,69 +294,84 @@ export default function Dashboard() {
                 <div>
                     <b>Create Paste</b>
                     <form onSubmit={handleCreatePaste} style={{ marginBottom: '20px', backgroundColor: '#eee', padding: '10px' }}>
-                        <table>
+                        <table style={{ width: '100%', maxWidth: '500px' }}>
                             <tbody>
                                 <tr>
-                                    <td valign="top">Content:</td>
-                                    <td><textarea value={pasteContent} onChange={e => setPasteContent(e.target.value)} required style={{width: '400px', height: '100px', fontFamily: 'monospace'}} /></td>
+                                    <td valign="top" style={{ width: '90px' }}>Content:</td>
+                                    <td>
+                                        <textarea 
+                                            value={pasteContent} 
+                                            onChange={e => setPasteContent(e.target.value)} 
+                                            required 
+                                            style={{ width: '100%', height: '100px', fontFamily: 'monospace' }} 
+                                        />
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Domain:</td>
                                     <td>
-                                        <select value={pasteDomain} onChange={e => setPasteDomain(e.target.value)}>
+                                        <select value={pasteDomain} onChange={e => setPasteDomain(e.target.value)} style={{ width: '100%' }}>
                                             {domains.map(d => <option key={d.hostname} value={d.hostname}>{d.hostname}</option>)}
                                         </select>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Custom Slug:</td>
-                                    <td><input type="text" value={pasteSlug} onChange={e => setPasteSlug(e.target.value)} /></td>
+                                    <td><input type="text" value={pasteSlug} onChange={e => setPasteSlug(e.target.value)} style={{ width: '100%' }} /></td>
                                 </tr>
                                 <tr>
                                     <td>Password:</td>
-                                    <td><input type="password" value={pastePassword} onChange={e => setPastePassword(e.target.value)} /></td>
+                                    <td><input type="password" value={pastePassword} onChange={e => setPastePassword(e.target.value)} style={{ width: '100%' }} /></td>
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td><button type="submit">Create Paste</button></td>
+                                    <td><button type="submit" style={{ marginTop: '5px' }}>Create Paste</button></td>
                                 </tr>
                             </tbody>
                         </table>
                     </form>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <b>Pastes ({processedPastes.length})</b>
                         <div>
-                            <input type="text" placeholder="Search..." value={pasteSearchQuery} onChange={(e) => setPasteSearchQuery(e.target.value)} />
+                            <input 
+                                type="text" 
+                                placeholder="Search..." 
+                                value={pasteSearchQuery} 
+                                onChange={(e) => setPasteSearchQuery(e.target.value)} 
+                                style={{ width: '120px' }}
+                            />
                         </div>
                     </div>
 
-                    <table style={{ width: '100%' }} border={0} cellPadding={3}>
-                        <tbody>
-                            <tr className="table-header">
-                                <th>Slug</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Actions</th>
-                            </tr>
-                            {paginatedPastes.map((paste, i) => {
-                                const fullUrl = `https://${paste.hostname}/p/${paste.slug}`;
-                                return (
-                                <tr key={paste.slug} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#eee' }}>
-                                    <td><a href={fullUrl} target="_blank">{paste.slug}</a></td>
-                                    <td align="center">
-                                        {paste.isExpired ? 'Expired' : (paste.hasPassword ? 'Protected' : 'Live')}
-                                    </td>
-                                    <td align="center">{new Date(paste.createdAt).toLocaleString()}</td>
-                                    <td align="center">
-                                        <a href="#" onClick={(e) => {e.preventDefault(); copyToClipboard(fullUrl)}}>[copy]</a>{' '}
-                                        <a href="#" onClick={(e) => {e.preventDefault(); handleDeletePaste(paste.slug)}}>[delete]</a>
-                                    </td>
+                    <div className="table-responsive">
+                        <table style={{ width: '100%', minWidth: '600px' }} border={0} cellPadding={3}>
+                            <tbody>
+                                <tr className="table-header">
+                                    <th align="left">Slug</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
                                 </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+                                {paginatedPastes.map((paste, i) => {
+                                    const fullUrl = `https://${paste.hostname}/p/${paste.slug}`;
+                                    return (
+                                    <tr key={paste.slug} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#eee' }}>
+                                        <td><a href={fullUrl} target="_blank">{paste.slug}</a></td>
+                                        <td align="center">
+                                            {paste.isExpired ? 'Expired' : (paste.hasPassword ? 'Protected' : 'Live')}
+                                        </td>
+                                        <td align="center">{new Date(paste.createdAt).toLocaleString()}</td>
+                                        <td align="center">
+                                            <a href="#" onClick={(e) => {e.preventDefault(); copyToClipboard(fullUrl)}}>[copy]</a>{' '}
+                                            <a href="#" onClick={(e) => {e.preventDefault(); handleDeletePaste(paste.slug)}}>[delete]</a>
+                                        </td>
+                                    </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                     
                     {pasteTotalPages > 1 && (
                         <div style={{ marginTop: '10px' }}>

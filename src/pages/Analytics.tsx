@@ -65,59 +65,63 @@ export default function Analytics() {
                 <Link to="/dashboard" style={{ fontSize: '9pt' }}>[back to dashboard]</Link>
             </div>
 
-            <table border={1} cellPadding={5} style={{ marginBottom: '20px', borderCollapse: 'collapse', borderColor: '#ccc' }}>
-                <tbody>
-                    <tr style={{ backgroundColor: '#eee' }}>
-                        <th>Views</th>
-                        <th>Visitors</th>
-                        <th>Countries</th>
-                        <th>Browsers</th>
-                    </tr>
-                    <tr>
-                        <td align="center">{stats?.pageviews?.value || 0}</td>
-                        <td align="center">{stats?.visitors?.value || 0}</td>
-                        <td align="center">{data.countries?.length || 0}</td>
-                        <td align="center">{data.browsers?.length || 0}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div className="table-responsive">
+                <table border={1} cellPadding={5} style={{ width: '100%', minWidth: '400px', marginBottom: '20px', borderCollapse: 'collapse', borderColor: '#ccc' }}>
+                    <tbody>
+                        <tr style={{ backgroundColor: '#eee' }}>
+                            <th>Views</th>
+                            <th>Visitors</th>
+                            <th>Countries</th>
+                            <th>Browsers</th>
+                        </tr>
+                        <tr>
+                            <td align="center">{stats?.pageviews?.value || 0}</td>
+                            <td align="center">{stats?.visitors?.value || 0}</td>
+                            <td align="center">{data.countries?.length || 0}</td>
+                            <td align="center">{data.browsers?.length || 0}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <table width="100%">
-                <tbody>
-                    <tr>
-                        <td valign="top" width="50%">
-                            <b>Top Referrers</b>
-                            <table width="90%" border={1} cellPadding={3} style={{ borderCollapse: 'collapse', borderColor: '#eee', marginTop: '5px' }}>
-                                <tbody>
-                                    <tr className="table-header"><th>Referrer</th><th>Views</th></tr>
-                                    {data.referrers?.slice(0, 5).map((ref, i) => (
-                                        <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#fff' }}>
-                                            <td>{ref.x || 'Direct'}</td>
-                                            <td align="right">{ref.y}</td>
-                                        </tr>
-                                    ))}
-                                    {(!data.referrers || data.referrers.length === 0) && <tr><td colSpan={2}>No data</td></tr>}
-                                </tbody>
-                            </table>
-                        </td>
-                        <td valign="top" width="50%">
-                            <b>Top Countries</b>
-                            <table width="90%" border={1} cellPadding={3} style={{ borderCollapse: 'collapse', borderColor: '#eee', marginTop: '5px' }}>
-                                <tbody>
-                                    <tr className="table-header"><th>Country</th><th>Views</th></tr>
-                                    {data.countries?.slice(0, 5).map((c, i) => (
-                                        <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#fff' }}>
-                                            <td>{c.x || 'Unknown'}</td>
-                                            <td align="right">{c.y}</td>
-                                        </tr>
-                                    ))}
-                                    {(!data.countries || data.countries.length === 0) && <tr><td colSpan={2}>No data</td></tr>}
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div className="table-responsive">
+                <table width="100%" style={{ minWidth: '500px' }}>
+                    <tbody>
+                        <tr>
+                            <td valign="top" width="50%">
+                                <b>Top Referrers</b>
+                                <table width="90%" border={1} cellPadding={3} style={{ borderCollapse: 'collapse', borderColor: '#eee', marginTop: '5px' }}>
+                                    <tbody>
+                                        <tr className="table-header"><th>Referrer</th><th>Views</th></tr>
+                                        {data.referrers?.slice(0, 5).map((ref, i) => (
+                                            <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#fff' }}>
+                                                <td>{ref.x || 'Direct'}</td>
+                                                <td align="right">{ref.y}</td>
+                                            </tr>
+                                        ))}
+                                        {(!data.referrers || data.referrers.length === 0) && <tr><td colSpan={2}>No data</td></tr>}
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td valign="top" width="50%">
+                                <b>Top Countries</b>
+                                <table width="90%" border={1} cellPadding={3} style={{ borderCollapse: 'collapse', borderColor: '#eee', marginTop: '5px' }}>
+                                    <tbody>
+                                        <tr className="table-header"><th>Country</th><th>Views</th></tr>
+                                        {data.countries?.slice(0, 5).map((c, i) => (
+                                            <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#f6f6ef' : '#fff' }}>
+                                                <td>{c.x || 'Unknown'}</td>
+                                                <td align="right">{c.y}</td>
+                                            </tr>
+                                        ))}
+                                        {(!data.countries || data.countries.length === 0) && <tr><td colSpan={2}>No data</td></tr>}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     )
 }
