@@ -114,9 +114,11 @@ export async function handleGetLinkDetails(req, res, db) {
          return res.status(503).json({ error: "Umami is not configured. Missing UMAMI_URL, UMAMI_WEBSITE_ID, UMAMI_USERNAME, or UMAMI_PASSWORD." });
     }
 
+    const cleanUmamiUrl = umamiUrl.replace(/\/$/, '');
+
     try {
         // Authenticate with Umami to get a token
-        const authRes = await fetch(`${umamiUrl}/api/auth/login`, {
+        const authRes = await fetch(`${cleanUmamiUrl}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -136,14 +138,14 @@ export async function handleGetLinkDetails(req, res, db) {
         const queryUrl = `/${slug}`;
 
         // Fetch stats
-        const statsRes = await fetch(`${umamiUrl}/api/websites/${websiteId}/stats?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}`, {
+        const statsRes = await fetch(`${cleanUmamiUrl}/api/websites/${websiteId}/stats?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}`, {
             headers: authHeader
         });
         const stats = await statsRes.json();
 
         // Helper to fetch metrics
         const fetchMetric = async (type) => {
-             const res = await fetch(`${umamiUrl}/api/websites/${websiteId}/metrics?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}&type=${type}`, {
+             const res = await fetch(`${cleanUmamiUrl}/api/websites/${websiteId}/metrics?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}&type=${type}`, {
                   headers: authHeader
              });
              return res.json();
@@ -155,7 +157,7 @@ export async function handleGetLinkDetails(req, res, db) {
         const countries = await fetchMetric('country');
 
         // Fetch pageviews over time (for charts)
-        const pageviewsRes = await fetch(`${umamiUrl}/api/websites/${websiteId}/pageviews?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}&unit=day`, {
+        const pageviewsRes = await fetch(`${cleanUmamiUrl}/api/websites/${websiteId}/pageviews?url=${encodeURIComponent(queryUrl)}&startAt=${startAt}&endAt=${endAt}&unit=day`, {
              headers: authHeader
         });
         const pageviews = await pageviewsRes.json();

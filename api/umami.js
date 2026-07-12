@@ -4,14 +4,16 @@ export async function sendToUmami(req, slug) {
     const websiteId = process.env.UMAMI_WEBSITE_ID;
     
     if (!umamiUrl || !websiteId) return;
+    // Clean up trailing slash from URL if present
+    const cleanUmamiUrl = umamiUrl.replace(/\/$/, '');
 
     try {
         const payload = {
             payload: {
                 website: websiteId,
                 url: `/${slug}`,
-                name: "redirect",
-                hostname: req.headers['host'] || ''
+                hostname: req.headers['host'] || '',
+                referrer: req.headers['referer'] || ''
             },
             type: "event"
         };
@@ -19,7 +21,7 @@ export async function sendToUmami(req, slug) {
         const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress;
         const userAgent = req.headers['user-agent'];
         
-        await fetch(`${umamiUrl}/api/send`, {
+        const response = await fetch(`${cleanUmamiUrl}/api/send`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -28,7 +30,12 @@ export async function sendToUmami(req, slug) {
             },
             body: JSON.stringify(payload)
         });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`[ERROR][Umami] Tracking failed. Status: ${response.status} ${response.statusText}`, errorText);
+        }
     } catch (error) {
-        console.error("[ERROR][Umami] Tracking failed:", error);
+        console.error("[ERROR][Umami] Tracking request threw an error:", error);
     }
 }
