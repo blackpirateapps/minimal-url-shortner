@@ -1,5 +1,6 @@
 // /api/view.js
 import db from './_db.js';
+import bcrypt from 'bcryptjs';
 import { marked } from 'marked';
 
 export default async function handler(req, res) {
@@ -34,10 +35,12 @@ export default async function handler(req, res) {
 
     // Check for password
     if (paste.password) {
-      // This would redirect to a password entry page, similar to the URL shortener
-      // For simplicity in this example, we'll just show an error.
-      // A full implementation would use a page like `password.html?type=paste&slug=...`
-      return res.status(403).send('This paste is password protected. Password entry page not implemented in this example.');
+      const providedPassword = req.query.password;
+      if (providedPassword && bcrypt.compareSync(providedPassword, paste.password)) {
+        // Password matches, proceed to rendering content
+      } else {
+        return res.redirect(302, `/password?slug=${slug}`);
+      }
     }
     
     // Render the markdown content to HTML

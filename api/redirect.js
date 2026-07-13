@@ -1,6 +1,7 @@
 // /api/redirect.js
 
 import db from './_db.js';
+import bcrypt from 'bcryptjs';
 import { sendToUmami } from './umami.js';
 
 export default async function handler(req, res) {
@@ -25,9 +26,13 @@ export default async function handler(req, res) {
       const { url: longUrl, password } = result.rows[0];
       
       if (password) {
-        // This part is working correctly. The click is logged after verification.
-        console.log(`[INFO][Redirect] Password required for slug: ${slug}.`);
-        return res.redirect(302, `/password.html?slug=${slug}`);
+        const providedPassword = req.query.password || req.headers['x-link-password'];
+        if (providedPassword && bcrypt.compareSync(providedPassword, password)) {
+          console.log(`[INFO][Redirect] Password verified via query/header for slug: ${slug}.`);
+        } else {
+          console.log(`[INFO][Redirect] Password required for slug: ${slug}. Redirecting to /password.`);
+          return res.redirect(302, `/password?slug=${slug}`);
+        }
       }
       
       // --- START: Analytics Logging ---

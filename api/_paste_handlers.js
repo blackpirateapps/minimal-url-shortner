@@ -28,9 +28,13 @@ export async function handleGetPaste(req, res, db) {
     return res.status(410).json({ error: "This paste has expired and has been deleted." });
   }
 
-  // Handle password protection (future enhancement)
+  // Handle password protection
   if (paste.password) {
-    return res.status(403).json({ error: "This paste is password protected." })
+    const providedPassword = req.query.password || req.headers['x-link-password'];
+    if (providedPassword && bcrypt.compareSync(providedPassword, paste.password)) {
+      return res.status(200).json({ content: paste.content });
+    }
+    return res.status(403).json({ error: "This paste is password protected." });
   }
 
   return res.status(200).json({ content: paste.content });

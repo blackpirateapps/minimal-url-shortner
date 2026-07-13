@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 
 export default function PasteView() {
     const { slug } = useParams<{ slug: string }>()
     const [content, setContent] = useState('')
     const [error, setError] = useState('')
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchPaste = async () => {
@@ -14,15 +15,17 @@ export default function PasteView() {
                 if (res.ok) {
                     const data = await res.json()
                     setContent(data.content)
+                } else if (res.status === 403) {
+                    navigate(`/password?slug=${slug}`)
                 } else {
-                    setError('Paste not found or protected')
+                    setError('Paste not found')
                 }
             } catch {
                 setError('Error fetching paste')
             }
         }
         fetchPaste()
-    }, [slug])
+    }, [slug, navigate])
 
     if (error) return <div className="container" style={{padding: '10px'}}>{error}</div>
 

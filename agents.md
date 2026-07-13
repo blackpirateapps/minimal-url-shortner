@@ -40,7 +40,7 @@ minimal-url-shortner/
 │   ├── index.html          # Main dashboard (login + management)
 │   ├── dasboard.html       # Legacy simple form (unused?)
 │   ├── details.html        # Link analytics page
-│   ├── password.html       # Password prompt for protected links
+│   ├── password            # Password prompt for protected links (/password)
 │   └── paste.html          # Client-side paste viewer
 ├── package.json
 ├── vercel.json             # Vercel routing configuration
@@ -155,12 +155,12 @@ The application uses **3 tables**:
 1. User visits `https://domain.com/xyz123`
 2. `vercel.json` rewrite sends to `/api/redirect.js?slug=xyz123`
 3. `redirect.js` looks up slug in database
-4. If password protected → redirect to `/password.html?slug=xyz123`
+4. If password protected → redirect to `/password?slug=xyz123`
 5. Otherwise → log click analytics → 308 redirect to destination
 
 ### Password Protection
 - Passwords are hashed with bcrypt (10 salt rounds)
-- Protected links redirect to `/password.html`
+- Protected links redirect to `/password`
 - Password verification happens via `/api/verify-password`
 - Click analytics logged only after successful verification
 

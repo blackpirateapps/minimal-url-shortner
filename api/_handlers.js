@@ -48,27 +48,48 @@ export async function handleUpdateLink(req, res, db, bodyData) {
   return res.status(200).json({ message: "Link updated successfully." });
 }
 
-// --- UPDATED: Handler to verify a password ---
+// --- UPDATED: Handler to verify a password for links and pastes ---
 export async function handleVerifyPassword(req, res, db, bodyData) {
   const { slug, password } = bodyData;
   if (!slug || !password) return res.status(400).json({ error: "Slug and password are required." });
-  const result = await db.execute({ sql: "SELECT url, password FROM links WHERE slug = ?", args: [slug] });
-  if (result.rows.length === 0 || !result.rows[0].password) return res.status(404).json({ error: "Protected link not found." });
-  
-  const link = result.rows[0];
-  const isPasswordCorrect = bcrypt.compareSync(password, link.password);
 
-  if (isPasswordCorrect) {
-    try {
-        await sendToUmami(req, slug);
-        await db.execute({ sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?", args: [slug] });
-    } catch (dbError) { 
-        console.error(`[ERROR][API] Failed to log analytics for protected slug ${slug}:`, dbError); 
+  // 1. Check short links
+  const linkResult = await db.execute({ sql: "SELECT url, password FROM links WHERE slug = ?", args: [slug] });
+  if (linkResult.rows.length > 0 && linkResult.rows[0].password) {
+    const link = linkResult.rows[0];
+    const isPasswordCorrect = bcrypt.compareSync(password, link.password);
+
+    if (isPasswordCorrect) {
+      try {
+          await sendToUmami(req, slug);
+          await db.execute({ sql: "UPDATE links SET click_count = click_count + 1 WHERE slug = ?", args: [slug] });
+      } catch (dbError) { 
+          console.error(`[ERROR][API] Failed to log analytics for protected slug ${slug}:`, dbError); 
+      }
+      return res.status(200).json({ destinationUrl: link.url, type: 'link' });
+    } else {
+      return res.status(401).json({ error: "Invalid password." });
     }
-    return res.status(200).json({ destinationUrl: link.url });
-  } else {
-    return res.status(401).json({ error: "Invalid password." });
   }
+
+  // 2. Check pastes
+  const pasteResult = await db.execute({ sql: "SELECT content, password, expires_at FROM pastes WHERE slug = ?", args: [slug] });
+  if (pasteResult.rows.length > 0 && pasteResult.rows[0].password) {
+    const paste = pasteResult.rows[0];
+    if (paste.expires_at && new Date(paste.expires_at) < new Date()) {
+      await db.execute({ sql: "DELETE FROM pastes WHERE slug = ?", args: [slug] });
+      return res.status(410).json({ error: "This paste has expired and has been deleted." });
+    }
+
+    const isPasswordCorrect = bcrypt.compareSync(password, paste.password);
+    if (isPasswordCorrect) {
+      return res.status(200).json({ content: paste.content, type: 'paste' });
+    } else {
+      return res.status(401).json({ error: "Invalid password." });
+    }
+  }
+
+  return res.status(404).json({ error: "Protected link or paste not found." });
 }
 
 // --- Handler for creating a short URL ---
@@ -97,7 +118,7 @@ export async function handleShortenUrl(req, res, db, bodyData) {
     args: [slug, longUrl, hostname, hashedPassword] 
   });
   const shortUrl = `https://${hostname}/${slug}`;
-  return res.status(200).json({ shortUrl });
+  return res.status(200).json({ shortUrl, slug, hostname, hasPassword: !!hashedPassword });
 }
 
 // --- Other handlers ---
@@ -177,7 +198,16 @@ export async function handleGetLinkDetails(req, res, db) {
 }
 export async function handleGetLinks(req, res, db) {
     const result = await db.execute("SELECT slug, url, created_at, click_count, hostname, password FROM links ORDER BY created_at DESC");
-    return res.status(200).json(result.rows);
+    const links = result.rows.map(link => ({
+        slug: link.slug,
+        url: link.url,
+        created_at: link.created_at,
+        click_count: link.click_count,
+        hostname: link.hostname,
+        password: link.password ? 'protected' : null,
+        hasPassword: !!link.password
+    }));
+    return res.status(200).json(links);
 }
 export async function handleGetDomains(req, res, db) {
     const result = await db.execute("SELECT hostname FROM domains ORDER BY added_at ASC");
